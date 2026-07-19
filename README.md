@@ -1,106 +1,67 @@
 # Workpiece Data Studio
 
-Standalone local tool for generating and reviewing realistic workpiece training
-images. It does not run inside Unity and does not modify the LIVEs runtime.
+Workpiece Data Studio 是一套獨立的工件影像生成與 YOLO 資料審查工具，使用
+FastAPI 與瀏覽器介面操作。
 
-## What the MVP does
+固定類別：
 
-- Creates an isolated local project with classes `hole`, `screw`, and `tool`.
-- Imports a Roboflow YOLOv8 ZIP safely for reference and class validation.
-- Accepts one or more workpiece reference photographs.
-- Generates 640×640 candidates with SD 1.5 image-to-image + IP-Adapter.
-- On a 20+ GB school GPU, generates 1024×1024 candidates with SDXL +
-  IP-Adapter + Canny ControlNet.
-- On the school server, uses FLUX.2 Klein 9B BF16 with CPU offload for larger,
-  instruction-driven workpiece redesigns.
-- Can run a custom Ultralytics YOLO `.pt` model to create draft boxes.
-- Provides a browser canvas to add, move, resize, relabel, and delete boxes.
-- Tracks `pending`, `approved`, and `rejected` review states.
-- Exports approved candidates as a Roboflow-compatible YOLOv8 ZIP.
+- `0 = hole`
+- `1 = screw`
+- `2 = tool`
 
-Generated images are candidates, not automatic ground truth. New mechanical
-structures, small holes, and screw heads must be reviewed before training.
+## 主要功能
 
-## Install
+- 上傳工件參考照片。
+- 使用 Stable Diffusion 1.5、SDXL 或 FLUX.2 生成不同工件影像。
+- 提供「嚴格保留結構」與「機械形狀變體」等模式。
+- 使用自己的 Ultralytics `best.pt` 自動建立 YOLO 草稿框。
+- 在瀏覽器中新增、移動、縮放、改類別或刪除標註框。
+- 人工接受或淘汰每張候選圖片。
+- 匯出可上傳至 Roboflow 的 YOLOv8 ZIP。
 
-The delivered copy on this computer is already prepared with the CUDA
-environment, SD 1.5/IP-Adapter cache, the supplied YOLOv8 ZIP, `best.pt`, and
-four reference images. Start it directly with `run.ps1`.
+`best.pt` 只負責預標註，不參與影像生成。所有生成圖片都必須經過人工檢查，
+不能直接視為正確標註。
 
-Use the setup commands below only when recreating or repairing the environment.
+## 本機啟動
 
-Open PowerShell in this folder:
+請在專案目錄使用專案自己的虛擬環境：
+
+```powershell
+.venv\Scripts\python.exe -m uvicorn workpiece_studio.main:app --host 127.0.0.1 --port 7865
+```
+
+開啟：
+
+<http://127.0.0.1:7865>
+
+若需要重新安裝環境：
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
-.\setup.ps1
-```
-
-Core mode installs quickly and includes a clearly marked mock generator for
-testing the complete workflow without downloading large models.
-
-Install the real local AI stack when ready:
-
-```powershell
 .\setup.ps1 -WithML
 ```
 
-The first real generation downloads the selected Hugging Face base model and
-IP-Adapter into this project's ignored `workspace/.huggingface` cache. Several
-GB of free disk space and internet access are required.
+## 學校伺服器
 
-## Run
+學校伺服器可使用較大的模型：
 
-```powershell
-.\run.ps1
-```
+- SDXL + IP-Adapter + Canny ControlNet
+- FLUX.2 Klein 9B BF16 + CPU offload
+- `best.pt` YOLO 自動預標註
 
-Then open <http://127.0.0.1:7865>.
+伺服器只允許使用實體 GPU `2`、`3` 或 `6`。完整流程請參考
+[`school_server/README.md`](school_server/README.md)。
 
-The included project is named `workpiece-generation`. You can add more
-reference photographs from the first tab without changing the original files.
+FLUX.2 Klein 9B 使用 FLUX Non-Commercial License，只能依其授權條款進行
+非商業研究與開發。
 
-## RTX 4060 Laptop 8 GB defaults
+## 資料處理流程
 
-- Base: `stable-diffusion-v1-5/stable-diffusion-v1-5`
-- Adapter: `h94/IP-Adapter`, `models/ip-adapter_sd15.bin`
-- Output: 640×640
-- FP16 and model CPU offload enabled
-- One image at a time
+1. 建立專案並加入參考工件照片。
+2. 選擇模型與機械保真模式。
+3. 生成候選圖片並使用 `best.pt` 預標。
+4. 人工修正框選結果並接受或淘汰圖片。
+5. 只匯出通過審查的圖片為 YOLOv8 ZIP。
+6. 將 ZIP 上傳至 Roboflow，或與真實訓練資料合併。
 
-Use the default strict mechanical mode (`strength 0.34`, IP-Adapter `0.82`).
-It clamps structural variation and always keeps the built-in anti-deformation
-negative prompt. Higher strength gives more variety but increases impossible
-geometry.
-
-Use **mechanical shape variation** when a different silhouette is required. It
-raises img2img strength, weakens and ends Canny ControlNet earlier, and asks for
-new proportions, mounting ears, ribs, cooling fins, and cavity placement while
-still requiring circular holes and correctly seated fasteners.
-
-For a larger semantic redesign, select **FLUX.2 Klein 9B BF16** in the school
-server UI. FLUX uses native reference-image editing instead of the strength and
-IP-Adapter sliders, and its distilled pipeline runs four inference steps. The
-9B model is governed by the FLUX Non-Commercial License. This application's
-manual review stage is mandatory for every generated candidate.
-
-## School server
-
-The school server workflow is documented in
-`school_server/README.md`. The application runs on the remote GPU and binds to
-remote localhost only; an SSH tunnel makes the same UI available at local
-`http://127.0.0.1:7866`. SSH credentials are never stored in the web app.
-
-## Output
-
-Each project is stored under `workspace/projects/<project-id>/`. Exports contain:
-
-```text
-train/images/
-train/labels/
-data.yaml
-generation_manifest.json
-```
-
-This generated-only ZIP can be uploaded to Roboflow or merged with an existing
-YOLOv8 training set. Keep real validation and test sets separate.
+建議保留真實的 validation/test 資料，生成圖片只加入 training split。
