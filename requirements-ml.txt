@@ -1,0 +1,6 @@
+# setup.ps1 installs the NVIDIA CUDA build of torch/torchvision first.
+diffusers>=0.35,<0.40
+transformers>=4.50,<6
+accelerate>=1.2,<2
+safetensors>=0.5,<1
+ultralytics>=8.3,<9

@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Workpiece Data Studio</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">LOCAL SYNTHETIC DATA WORKBENCH</div>
+      <h1>Workpiece Data Studio</h1>
+      <p>生成不同且真實的工件，再快速確認 hole / screw / tool 標註。</p>
+    </div>
+    <div id="systemBadge" class="badge">檢查環境中…</div>
+  </header>
+
+  <main>
+    <section class="panel project-strip">
+      <label>目前專案
+        <select id="projectSelect"></select>
+      </label>
+      <button id="refreshProjects" class="secondary">重新整理</button>
+      <button id="deleteProject" class="danger secondary">刪除目前專案</button>
+      <div class="divider"></div>
+      <label>建立新專案
+        <input id="newProjectName" value="workpiece-experiment" maxlength="80">
+      </label>
+      <button id="createProject">建立</button>
+    </section>
+
+    <div id="noProject" class="empty-state">
+      建立或選擇專案後即可開始。所有檔案只儲存在本機。
+    </div>
+
+    <div id="workspace" hidden>
+      <nav class="tabs">
+        <button data-tab="setup" class="active">1. 資料與模型</button>
+        <button data-tab="generate">2. 生成工件</button>
+        <button data-tab="review">3. 審核標註</button>
+        <button data-tab="export">4. 匯出</button>
+      </nav>
+
+      <section id="tab-setup" class="tab-panel active">
+        <div class="grid two">
+          <article class="panel">
+            <div class="section-title">
+              <div>
+                <span class="step">A</span>
+                <h2>原始 Roboflow 資料</h2>
+              </div>
+            </div>
+            <p class="muted">用來檢查類別與保留來源；不會覆寫原 ZIP。</p>
+            <input id="datasetFile" type="file" accept=".zip">
+            <button id="uploadDataset">匯入 YOLOv8 ZIP</button>
+            <pre id="datasetSummary" class="summary">尚未匯入</pre>
+          </article>
+
+          <article class="panel">
+            <div class="section-title">
+              <div>
+                <span class="step">B</span>
+                <h2>YOLO 預標模型</h2>
+              </div>
+            </div>
+            <p class="muted">上傳你目前的 Ultralytics `.pt`。預測只會成為草稿框。</p>
+            <div class="inline-upload model-upload">
+              <input id="modelFile" type="file" accept=".pt">
+              <button id="clearModelFile" class="secondary" disabled>取消選取</button>
+              <button id="uploadModel">上傳 .pt</button>
+            </div>
+            <small>相同內容的模型不會重複儲存；上傳後也可以從清單移除。</small>
+            <div id="modelList" class="item-list"></div>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="section-title">
+            <div>
+              <span class="step">C</span>
+              <h2>新工件參考圖</h2>
+            </div>
+          </div>
+          <p class="muted">每張參考圖分開生成，避免不同工件結構互相融合。</p>
+          <div class="inline-upload">
+            <input id="referenceFile" type="file" accept="image/*">
+            <button id="uploadReference">加入參考圖</button>
+          </div>
+          <div id="referenceGrid" class="reference-grid"></div>
+        </article>
+      </section>
+
+      <section id="tab-generate" class="tab-panel">
+        <div class="grid generation-grid">
+          <article class="panel">
+            <h2>生成設定</h2>
+            <label>參考工件
+              <select id="generationReference"></select>
+            </label>
+            <label>執行模式
+              <select id="provider">
+                <option value="diffusers">本機：SD 1.5 + IP-Adapter（約 1B）</option>
+                <option value="sdxl_controlnet">學校 GPU：SDXL + IP-Adapter + ControlNet（建議）</option>
+                <option value="flux2_klein">學校 GPU：FLUX.2 Klein 9B BF16（大幅改形狀／非商業）</option>
+                <option value="mock">流程測試：有浮水印、禁止匯出</option>
+              </select>
+            </label>
+            <label>參考圖構圖
+              <select id="framing">
+                <option value="focus_crop">聚焦中央工件（建議）</option>
+                <option value="letterbox">保留完整畫面並補邊</option>
+              </select>
+            </label>
+            <label>機械保真模式
+              <select id="qualityMode">
+                <option value="strict">嚴格保留孔洞與螺絲（建議）</option>
+                <option value="shape_variation">機械形狀變體（改輪廓與比例）</option>
+                <option value="balanced">平衡保真與變化</option>
+                <option value="creative">高變化（需要更嚴格人工淘汰）</option>
+              </select>
+            </label>
+            <div id="qualityHint" class="warning compact">
+              嚴格模式主要改變光線、材質與背景，並限制結構變形；任何不圓的孔洞、融合或漂浮螺絲仍應直接淘汰。
+            </div>
+            <label>場景與工件描述
+              <textarea id="prompt" rows="7">Top-down realistic smartphone photograph of a different three-dimensional industrial motor housing, physically plausible cast aluminum body, cooling fins, correctly seated bolts and threaded circular holes, natural contact shadows, cluttered laboratory workbench, real machining marks, varied but mechanically possible hole and screw arrangement, documentary photography</textarea>
+            </label>
+            <label>避免項目（留空使用內建值）
+              <textarea id="negativePrompt" rows="3" placeholder="內建會排除假孔洞、融合螺絲、CGI、模糊與浮水印"></textarea>
+            </label>
+          </article>
+
+          <article class="panel controls">
+            <h2>變化程度</h2>
+            <label>生成張數
+              <input id="generationCount" type="number" value="4" min="1" max="100">
+            </label>
+            <label>變化強度 <output id="strengthValue">0.34</output>
+              <input id="strength" type="range" value="0.34" min="0.05" max="0.95" step="0.01">
+            </label>
+            <small>越高越不像原圖，但機械結構錯誤也會增加。</small>
+            <label>參考圖影響 <output id="adapterValue">0.82</output>
+              <input id="adapterScale" type="range" value="0.82" min="0" max="1.5" step="0.01">
+            </label>
+            <label>推論步數
+              <input id="steps" type="number" value="32" min="4" max="100">
+            </label>
+            <label>Seed（空白為隨機）
+              <input id="seed" type="number" placeholder="random">
+            </label>
+            <hr>
+            <label class="check">
+              <input id="prelabel" type="checkbox" checked>
+              生成後使用 YOLO 預標
+            </label>
+            <label>YOLO 模型
+              <select id="generationModel"></select>
+            </label>
+            <label>預標信心門檻
+              <input id="confidence" type="number" value="0.18" min="0.01" max="0.99" step="0.01">
+            </label>
+            <button id="startGeneration" class="large">開始生成</button>
+            <div id="jobBox" class="job-box" hidden>
+              <div class="progress"><div id="jobProgress"></div></div>
+              <div id="jobText"></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-review" class="tab-panel">
+        <div class="review-toolbar panel">
+          <button id="previousCandidate" class="secondary">← 上一張</button>
+          <span id="candidatePosition">0 / 0</span>
+          <button id="nextCandidate" class="secondary">下一張 →</button>
+          <label>篩選
+            <select id="candidateFilter">
+              <option value="pending">待審核</option>
+              <option value="all">全部</option>
+              <option value="approved">已接受</option>
+              <option value="rejected">已淘汰</option>
+            </select>
+          </label>
+          <button id="reloadCandidates" class="secondary">更新清單</button>
+        </div>
+
+        <div class="review-layout">
+          <article class="canvas-panel panel">
+            <div id="canvasEmpty" class="canvas-empty">目前沒有符合條件的候選圖片。</div>
+            <canvas id="annotationCanvas" width="640" height="640"></canvas>
+          </article>
+          <aside class="panel annotation-panel">
+            <h2>Bounding Box</h2>
+            <p class="muted">拖曳空白處新增；拖曳框可移動，拖曳四角可縮放。</p>
+            <label>新增／選取類別
+              <select id="annotationClass"></select>
+            </label>
+            <div id="selectedBoxInfo" class="summary">未選取框</div>
+            <button id="deleteBox" class="danger secondary">刪除選取框</button>
+            <hr>
+            <h2>機械合理性檢查</h2>
+            <label class="check"><input id="checkGeometry" type="checkbox"> 工件整體結構合理</label>
+            <label class="check"><input id="checkHoles" type="checkbox"> 孔洞是凹入實體，不是黑點或貼圖</label>
+            <label class="check"><input id="checkScrews" type="checkbox"> 螺絲／螺栓有正確落座，沒有漂浮融合</label>
+            <label class="check"><input id="checkTool" type="checkbox"> 工具沒有和工件、手或電線融合</label>
+            <hr>
+            <button id="approveCandidate" class="approve large">接受並儲存</button>
+            <button id="savePending" class="secondary large">儲存為待審核</button>
+            <button id="rejectCandidate" class="danger large">淘汰圖片</button>
+            <div id="generationInfo" class="generation-info"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="tab-export" class="tab-panel">
+        <article class="panel export-panel">
+          <h2>匯出已接受資料</h2>
+          <p>只輸出已人工確認且由真實 AI 模式生成的圖片。流程測試圖會被強制排除。</p>
+          <div id="candidateCounts" class="count-grid"></div>
+          <div class="warning">
+            合成圖片只應放入 train；validation/test 請保留真實、未看過的工件。
+          </div>
+          <button id="exportDataset" class="large">下載 YOLOv8 ZIP</button>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
