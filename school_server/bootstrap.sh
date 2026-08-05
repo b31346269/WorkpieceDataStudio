@@ -4,9 +4,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-# This account may use physical GPU 2, 3, or 6 only. The environment check
-# uses physical GPU 2 and exposes it as logical cuda:0.
-export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-2}"
+# This account may use physical GPU 2, 3, or 6 only. GPU 6 is the currently
+# allocated card; keep it as the safe default for setup checks and training.
+export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-6}"
 
 ENV_DIR="$ROOT/.school-env"
 CONDA_BIN="${CONDA_BIN:-/opt/miniconda3/bin/conda}"

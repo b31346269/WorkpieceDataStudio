@@ -61,6 +61,43 @@ FLUX_CREATIVE_PROMPT = (
     "holes and rigid correctly seated fasteners."
 )
 
+FACTORY_SCENE_PROMPTS = {
+    "assembly_line": (
+        "Place the workpiece on a real factory assembly-line metal bench with "
+        "fixtures, safety markings and overhead fluorescent lighting."
+    ),
+    "machine_enclosure": (
+        "Place the workpiece inside a CNC machine enclosure with brushed metal "
+        "walls, cool LED task lighting, mild oil residue and realistic shadows."
+    ),
+    "maintenance_bench": (
+        "Place the workpiece on a used industrial maintenance bench with subtle "
+        "oil stains, nearby hand tools and mixed warm and cool workshop light."
+    ),
+    "conveyor_fixture": (
+        "Place the workpiece in a believable conveyor inspection fixture with "
+        "clamps, machined rails and directional factory lighting."
+    ),
+    "warehouse_inspection": (
+        "Place the workpiece at a warehouse quality-inspection station with a "
+        "neutral metal surface, side daylight and overhead industrial lamps."
+    ),
+}
+
+
+def resolve_scene_prompt(scene_preset: str, seed: int) -> tuple[str, str]:
+    if scene_preset == "custom":
+        return "", "custom"
+    if scene_preset == "factory_mixed":
+        names = tuple(FACTORY_SCENE_PROMPTS)
+        scene_preset = names[seed % len(names)]
+    return FACTORY_SCENE_PROMPTS.get(scene_preset, ""), scene_preset
+
+
+def compose_prompt(settings: "GenerationSettings", prompt: str) -> str:
+    scene_prompt, _ = resolve_scene_prompt(settings.scene_preset, settings.seed)
+    return f"{scene_prompt} {prompt}".strip()
+
 
 def letterbox_square(image: Image.Image, size: int = 640) -> Image.Image:
     source = ImageOps.exif_transpose(image).convert("RGB")
@@ -109,6 +146,7 @@ class GenerationSettings:
     seed: int
     framing: str = "focus_crop"
     quality_mode: str = "strict"
+    scene_preset: str = "factory_mixed"
 
 
 class MockGenerator:
@@ -218,7 +256,7 @@ class DiffusersGenerator:
             strength = settings.strength
             adapter_scale = settings.ip_adapter_scale
             steps = settings.steps
-            prompt = settings.prompt.strip()
+            prompt = compose_prompt(settings, settings.prompt.strip())
             if settings.quality_mode == "strict":
                 strength = min(strength, 0.38)
                 adapter_scale = max(adapter_scale, 0.82)
@@ -360,7 +398,7 @@ class SDXLControlNetGenerator:
             steps = settings.steps
             control_scale = 0.58
             control_guidance_end = 0.92
-            prompt = settings.prompt.strip()
+            prompt = compose_prompt(settings, settings.prompt.strip())
             if settings.quality_mode == "strict":
                 strength = min(strength, 0.32)
                 adapter_scale = max(adapter_scale, 0.78)
@@ -499,7 +537,10 @@ class Flux2KleinGenerator:
                 "balanced": FLUX_BALANCED_PROMPT,
                 "creative": FLUX_CREATIVE_PROMPT,
             }.get(settings.quality_mode, FLUX_BALANCED_PROMPT)
-            prompt = f"{mode_prompt} {settings.prompt.strip()}"
+            prompt = compose_prompt(
+                settings,
+                f"{mode_prompt} {settings.prompt.strip()}",
+            )
             custom_negative = settings.negative_prompt.strip()
             avoid = (
                 f"{DEFAULT_NEGATIVE_PROMPT}, {custom_negative}"
@@ -558,11 +599,14 @@ def generate_image(
 ) -> tuple[Image.Image, dict[str, Any]]:
     with Image.open(reference_path) as source:
         reference = source.copy()
+    _, scene_variant = resolve_scene_prompt(settings.scene_preset, settings.seed)
     if provider == "mock":
         return _mock_generator.generate(reference, settings), {
             "provider": "mock",
             "training_eligible": False,
             "quality_mode": settings.quality_mode,
+            "scene_preset": settings.scene_preset,
+            "scene_variant": scene_variant,
         }
     if provider == "sdxl_controlnet":
         _unload(_flux2_klein_generator)
@@ -571,6 +615,8 @@ def generate_image(
             "provider": "sdxl_controlnet",
             "training_eligible": True,
             "quality_mode": settings.quality_mode,
+            "scene_preset": settings.scene_preset,
+            "scene_variant": scene_variant,
             **effective,
             **_sdxl_controlnet_generator.runtime,
         }
@@ -582,6 +628,8 @@ def generate_image(
             "provider": "flux2_klein",
             "training_eligible": True,
             "quality_mode": settings.quality_mode,
+            "scene_preset": settings.scene_preset,
+            "scene_variant": scene_variant,
             **effective,
             **_flux2_klein_generator.runtime,
         }
@@ -605,6 +653,8 @@ def generate_image(
         "provider": "diffusers",
         "training_eligible": True,
         "quality_mode": settings.quality_mode,
+        "scene_preset": settings.scene_preset,
+        "scene_variant": scene_variant,
         "effective_strength": effective_strength,
         "effective_ip_adapter_scale": effective_adapter_scale,
         "effective_steps": effective_steps,

@@ -92,6 +92,7 @@ class GenerationJobs:
                     seed=seed,
                     framing=request.framing,
                     quality_mode=request.quality_mode,
+                    scene_preset=request.scene_preset,
                 )
                 image, runtime = generate_image(
                     request.provider,
@@ -120,6 +121,7 @@ class GenerationJobs:
                     "guidance_scale": request.guidance_scale,
                     "steps": request.steps,
                     "quality_mode": request.quality_mode,
+                    "scene_preset": request.scene_preset,
                     "framing": request.framing,
                     "prelabel_model_id": request.yolo_model_id or None,
                     **runtime,

@@ -110,6 +110,7 @@ class CoreWorkflowTests(unittest.TestCase):
                 reference_id=reference["id"],
                 prompt="realistic industrial motor housing",
                 count=2,
+                seed=0,
                 provider="mock",
                 prelabel=False,
             ),
@@ -123,6 +124,13 @@ class CoreWorkflowTests(unittest.TestCase):
         self.assertEqual(current["status"], "completed", current.get("error"))
         candidates = self.store.list_candidates(self.project["id"])
         self.assertEqual(len(candidates), 2)
+        self.assertTrue(
+            all(item["generation"]["scene_preset"] == "factory_mixed" for item in candidates)
+        )
+        self.assertEqual(
+            {item["generation"]["scene_variant"] for item in candidates},
+            {"assembly_line", "machine_enclosure"},
+        )
         self.assertTrue(
             all(not item["generation"]["training_eligible"] for item in candidates)
         )

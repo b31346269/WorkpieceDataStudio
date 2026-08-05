@@ -1,0 +1,432 @@
+[
+  {
+    "rank": 1,
+    "file": "reference_01.jpg",
+    "source": "new_real_20260612_234305_jpg.rf.0a111ae9261c66c0592ce6b8af8712d9.jpg",
+    "classes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "brightness": 0.7306497097015381,
+    "contrast": 0.250110387802124,
+    "edge_energy": 0.14983724057674408
+  },
+  {
+    "rank": 2,
+    "file": "reference_02.jpg",
+    "source": "new_real_20260612_234024_jpg.rf.c102eaac6f71b21a3341862f71d874b4.jpg",
+    "classes": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1
+    ],
+    "brightness": 0.3196806311607361,
+    "contrast": 0.22838030755519867,
+    "edge_energy": 0.09755954891443253
+  },
+  {
+    "rank": 3,
+    "file": "reference_03.jpg",
+    "source": "new_real_20260331_143740_jpg.rf.e12289f35eb830da2acb62b33c95d09c.jpg",
+    "classes": [
+      0,
+      1,
+      1,
+      2
+    ],
+    "brightness": 0.5271896123886108,
+    "contrast": 0.11747709661722183,
+    "edge_energy": 0.0700482502579689
+  },
+  {
+    "rank": 4,
+    "file": "reference_04.jpg",
+    "source": "new_real_1000010505_jpg.rf.4d6382c5687be656681102b8b26232bb.jpg",
+    "classes": [
+      1,
+      1,
+      1,
+      0,
+      1,
+      0,
+      0,
+      1
+    ],
+    "brightness": 0.5546549558639526,
+    "contrast": 0.2695489823818207,
+    "edge_energy": 0.11717984080314636
+  },
+  {
+    "rank": 5,
+    "file": "reference_05.jpg",
+    "source": "new_real_20260612_234912_jpg.rf.d712211c22b8449db2af1be5e9112c54.jpg",
+    "classes": [
+      0,
+      0,
+      1,
+      1
+    ],
+    "brightness": 0.47850602865219116,
+    "contrast": 0.2594909369945526,
+    "edge_energy": 0.1636172980070114
+  },
+  {
+    "rank": 6,
+    "file": "reference_06.jpg",
+    "source": "new_real_20260612_233931_jpg.rf.f2f377d3d5bbefd24a2c846ee27c3ff9.jpg",
+    "classes": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0
+    ],
+    "brightness": 0.6315832138061523,
+    "contrast": 0.23346832394599915,
+    "edge_energy": 0.1252010613679886
+  },
+  {
+    "rank": 7,
+    "file": "reference_07.jpg",
+    "source": "new_real_1000010407_jpg.rf.c1743403697cfe56fa0261d167fd1c29.jpg",
+    "classes": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      1,
+      1
+    ],
+    "brightness": 0.4811600148677826,
+    "contrast": 0.2555992603302002,
+    "edge_energy": 0.11000210791826248
+  },
+  {
+    "rank": 8,
+    "file": "reference_08.jpg",
+    "source": "new_real_1000010466_jpg.rf.af78ac89c415bfe7d49afe9a058b8935.jpg",
+    "classes": [
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "brightness": 0.6488922834396362,
+    "contrast": 0.18488770723342896,
+    "edge_energy": 0.11889936029911041
+  },
+  {
+    "rank": 9,
+    "file": "reference_09.jpg",
+    "source": "new_real_1000010436_jpg.rf.e8fb4747e11beb9d555ace9b5d650085.jpg",
+    "classes": [
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "brightness": 0.4919021725654602,
+    "contrast": 0.2246575653553009,
+    "edge_energy": 0.1828383505344391
+  },
+  {
+    "rank": 10,
+    "file": "reference_10.jpg",
+    "source": "new_real_20260612_234441_jpg.rf.49f8ebcbc85abfda289264a30ecefd43.jpg",
+    "classes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "brightness": 0.33069854974746704,
+    "contrast": 0.23296622931957245,
+    "edge_energy": 0.11463695019483566
+  },
+  {
+    "rank": 11,
+    "file": "reference_11.jpg",
+    "source": "new_real_1000010486_jpg.rf.64636275cd80eeb52324a92c7961b57d.jpg",
+    "classes": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0
+    ],
+    "brightness": 0.5482537150382996,
+    "contrast": 0.23645436763763428,
+    "edge_energy": 0.11265605688095093
+  },
+  {
+    "rank": 12,
+    "file": "reference_12.jpg",
+    "source": "new_real_20260612_234506_jpg.rf.6f29de1a981b84bd41340e4ac4033fae.jpg",
+    "classes": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "brightness": 0.6590217351913452,
+    "contrast": 0.27219828963279724,
+    "edge_energy": 0.14191175997257233
+  },
+  {
+    "rank": 13,
+    "file": "reference_13.jpg",
+    "source": "new_real_20260402_155310_jpg.rf.832a5c5af6d0e672c5b74291423912cd.jpg",
+    "classes": [
+      1,
+      0,
+      1,
+      1,
+      1,
+      0,
+      1,
+      2,
+      2
+    ],
+    "brightness": 0.4643794298171997,
+    "contrast": 0.203817218542099,
+    "edge_energy": 0.10971392691135406
+  },
+  {
+    "rank": 14,
+    "file": "reference_14.jpg",
+    "source": "new_real_1000010453_jpg.rf.282e804b5fec82742d650de1936f39e3.jpg",
+    "classes": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2
+    ],
+    "brightness": 0.48656558990478516,
+    "contrast": 0.1850528120994568,
+    "edge_energy": 0.11432866007089615
+  },
+  {
+    "rank": 15,
+    "file": "reference_15.jpg",
+    "source": "new_real_1000010509_jpg.rf.2f21e2aac8a3242aa883211b6737d68d.jpg",
+    "classes": [
+      0,
+      0,
+      1,
+      0,
+      1,
+      2,
+      1
+    ],
+    "brightness": 0.45030927658081055,
+    "contrast": 0.2330845296382904,
+    "edge_energy": 0.1484193056821823
+  },
+  {
+    "rank": 16,
+    "file": "reference_16.jpg",
+    "source": "new_real_1000010404_jpg.rf.f3fa5a9e8aa4d409fc95b09158e9685a.jpg",
+    "classes": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2
+    ],
+    "brightness": 0.5434896349906921,
+    "contrast": 0.23197665810585022,
+    "edge_energy": 0.11096622049808502
+  },
+  {
+    "rank": 17,
+    "file": "reference_17.jpg",
+    "source": "new_real_20260612_234637_jpg.rf.4ef51a0ba996aca4f7efeeb8252080e6.jpg",
+    "classes": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1
+    ],
+    "brightness": 0.5877547264099121,
+    "contrast": 0.25998926162719727,
+    "edge_energy": 0.19717849791049957
+  },
+  {
+    "rank": 18,
+    "file": "reference_18.jpg",
+    "source": "new_real_20260612_234258_jpg.rf.aa11a28a709405f34d223b04a6f512d4.jpg",
+    "classes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "brightness": 0.4369552731513977,
+    "contrast": 0.25395235419273376,
+    "edge_energy": 0.12200233340263367
+  },
+  {
+    "rank": 19,
+    "file": "reference_19.jpg",
+    "source": "new_real_20260612_234914_jpg.rf.80ae1a44906b6edc5fa6530c2d733ea5.jpg",
+    "classes": [
+      0,
+      0,
+      1,
+      1
+    ],
+    "brightness": 0.3357939124107361,
+    "contrast": 0.22703245282173157,
+    "edge_energy": 0.12316176295280457
+  },
+  {
+    "rank": 20,
+    "file": "reference_20.jpg",
+    "source": "new_real_20260612_234045_jpg.rf.bb352e7309ce91151f6ba12f3625db47.jpg",
+    "classes": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0
+    ],
+    "brightness": 0.45881399512290955,
+    "contrast": 0.26529818773269653,
+    "edge_energy": 0.15331456065177917
+  },
+  {
+    "rank": 21,
+    "file": "reference_21.jpg",
+    "source": "new_real_20260612_234120_jpg.rf.bc4f262d1d72adb3ff37e562715c17c7.jpg",
+    "classes": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0
+    ],
+    "brightness": 0.700766921043396,
+    "contrast": 0.24762290716171265,
+    "edge_energy": 0.17248199880123138
+  },
+  {
+    "rank": 22,
+    "file": "reference_22.jpg",
+    "source": "new_real_20260612_234606_jpg.rf.e4926822f96fe38d6b7b57ba48f387fa.jpg",
+    "classes": [
+      1,
+      0,
+      0,
+      1,
+      1,
+      0
+    ],
+    "brightness": 0.7122567892074585,
+    "contrast": 0.21105660498142242,
+    "edge_energy": 0.1851208209991455
+  },
+  {
+    "rank": 23,
+    "file": "reference_23.jpg",
+    "source": "new_real_20260612_234730_jpg.rf.d4f65210c41aa1c9fa840b46d7a8ce04.jpg",
+    "classes": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      0
+    ],
+    "brightness": 0.38030028343200684,
+    "contrast": 0.24125638604164124,
+    "edge_energy": 0.1880916804075241
+  },
+  {
+    "rank": 24,
+    "file": "reference_24.jpg",
+    "source": "new_real_1000010389_jpg.rf.978972102803533f73fca0a6163ae74c.jpg",
+    "classes": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0
+    ],
+    "brightness": 0.562629222869873,
+    "contrast": 0.19691869616508484,
+    "edge_energy": 0.1889868676662445
+  },
+  {
+    "rank": 25,
+    "file": "reference_25.jpg",
+    "source": "new_real_1000010474_jpg.rf.38ed368b47118a1533f95a5c76f858c2.jpg",
+    "classes": [
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      2
+    ],
+    "brightness": 0.5413172245025635,
+    "contrast": 0.23016782104969025,
+    "edge_energy": 0.1128944531083107
+  }
+]

@@ -54,6 +54,15 @@ class GenerationRequest(BaseModel):
         "balanced",
         "creative",
     ] = "strict"
+    scene_preset: Literal[
+        "factory_mixed",
+        "assembly_line",
+        "machine_enclosure",
+        "maintenance_bench",
+        "conveyor_fixture",
+        "warehouse_inspection",
+        "custom",
+    ] = "factory_mixed"
     framing: Literal["focus_crop", "letterbox"] = "focus_crop"
     provider: Literal[
         "diffusers",

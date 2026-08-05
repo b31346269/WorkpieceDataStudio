@@ -6,3 +6,10 @@ workspace/
 models/
 .env
 
+# Local datasets, generated training outputs, diagnostics and cloned copies.
+training_inputs/*.zip
+tmp/
+diagnostics/
+WorkpieceDataStudio/
+*.pt
+*.onnx

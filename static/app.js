@@ -76,6 +76,7 @@ function bindEvents() {
   $("adapterScale").oninput = () => $("adapterValue").textContent = $("adapterScale").value;
   $("qualityMode").onchange = applyQualityPreset;
   $("provider").onchange = applyQualityPreset;
+  $("scenePreset").onchange = applyScenePreset;
   document.querySelectorAll(".tabs button").forEach((button) => {
     button.onclick = () => showTab(button.dataset.tab);
   });
@@ -326,6 +327,19 @@ function applyQualityPreset() {
     : preset.hint;
 }
 
+function applyScenePreset() {
+  const hints = {
+    factory_mixed: "混合模式會依 seed 輪替五種工廠背景，方便建立分布較廣的訓練資料。",
+    assembly_line: "金屬產線、治具、安全標線與頂部日光燈。",
+    machine_enclosure: "CNC 機台金屬內壁、冷色工作燈與輕微油污。",
+    maintenance_bench: "維修桌、少量工具、油漬及冷暖混合光。",
+    conveyor_fixture: "輸送帶、定位夾具、導軌與方向性工業光。",
+    warehouse_inspection: "倉儲品管站、側向自然光與工業頂燈。",
+    custom: "不加入預設場景，只採用下方的自訂描述。",
+  };
+  $("sceneHint").textContent = hints[$("scenePreset").value];
+}
+
 async function refreshProject() {
   state.project = await api(`/api/projects/${state.project.id}`);
   renderProject();
@@ -354,6 +368,7 @@ async function startGeneration() {
     guidance_scale: 6.5,
     steps: Number($("steps").value),
     quality_mode: $("qualityMode").value,
+    scene_preset: $("scenePreset").value,
     framing: $("framing").value,
     provider: $("provider").value,
     prelabel: $("prelabel").checked,

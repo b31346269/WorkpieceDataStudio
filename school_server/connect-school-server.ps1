@@ -3,8 +3,8 @@ param(
     [string]$RemoteDir = "~/workpiece_data_studio",
     [int]$LocalPort = 7866,
     [int]$RemotePort = 7865,
-    [ValidateSet(2, 3, 6)]
-    [int]$RemoteGpu = 2
+    [ValidateSet(6, 8)]
+    [int]$RemoteGpu = 6
 )
 
 $ErrorActionPreference = "Stop"

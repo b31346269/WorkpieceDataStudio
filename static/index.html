@@ -120,11 +120,23 @@
                 <option value="creative">高變化（需要更嚴格人工淘汰）</option>
               </select>
             </label>
+            <label>工廠場景
+              <select id="scenePreset">
+                <option value="factory_mixed">混合工廠環境（資料集建議）</option>
+                <option value="assembly_line">產線金屬工作台</option>
+                <option value="machine_enclosure">CNC 機台內部</option>
+                <option value="maintenance_bench">維修工作台</option>
+                <option value="conveyor_fixture">輸送帶與定位治具</option>
+                <option value="warehouse_inspection">倉儲品管檢查站</option>
+                <option value="custom">只使用下方自訂描述</option>
+              </select>
+            </label>
+            <small id="sceneHint">混合模式會依 seed 輪替五種工廠背景，方便建立分布較廣的訓練資料。</small>
             <div id="qualityHint" class="warning compact">
               嚴格模式主要改變光線、材質與背景，並限制結構變形；任何不圓的孔洞、融合或漂浮螺絲仍應直接淘汰。
             </div>
             <label>場景與工件描述
-              <textarea id="prompt" rows="7">Top-down realistic smartphone photograph of a different three-dimensional industrial motor housing, physically plausible cast aluminum body, cooling fins, correctly seated bolts and threaded circular holes, natural contact shadows, cluttered laboratory workbench, real machining marks, varied but mechanically possible hole and screw arrangement, documentary photography</textarea>
+              <textarea id="prompt" rows="7">Realistic smartphone photograph of a different three-dimensional industrial motor housing, physically plausible cast aluminum body, cooling fins, correctly seated bolts and threaded circular holes, natural contact shadows, real machining marks, varied but mechanically possible hole and screw arrangement, documentary photography</textarea>
             </label>
             <label>避免項目（留空使用內建值）
               <textarea id="negativePrompt" rows="3" placeholder="內建會排除假孔洞、融合螺絲、CGI、模糊與浮水印"></textarea>
