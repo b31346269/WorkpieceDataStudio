@@ -122,13 +122,13 @@
             </label>
             <label>工廠場景
               <select id="scenePreset">
-                <option value="factory_mixed">混合工廠環境（資料集建議）</option>
+                <option value="factory_mixed">混合工廠環境（可能產生側視遠景）</option>
                 <option value="assembly_line">產線金屬工作台</option>
                 <option value="machine_enclosure">CNC 機台內部</option>
                 <option value="maintenance_bench">維修工作台</option>
                 <option value="conveyor_fixture">輸送帶與定位治具</option>
                 <option value="warehouse_inspection">倉儲品管檢查站</option>
-                <option value="custom">只使用下方自訂描述</option>
+                <option value="custom" selected>垂直俯拍工廠治具（建議）</option>
               </select>
             </label>
             <small id="sceneHint">混合模式會依 seed 輪替五種工廠背景，方便建立分布較廣的訓練資料。</small>
@@ -136,20 +136,16 @@
               嚴格模式主要改變光線、材質與背景，並限制結構變形；任何不圓的孔洞、融合或漂浮螺絲仍應直接淘汰。
             </div>
             <label>場景與工件描述
-              <textarea id="prompt" rows="14">Realistic photograph from a ceiling-mounted factory inspection camera positioned directly above the workpiece. Use an 88 to 90 degree elevation above the work surface so the optical axis is almost perpendicular to the upper face. The top face must fill most of the frame and appear close to its true plan-view shape, with nearly parallel opposite edges instead of a strong trapezoid. Hide the front and side faces except for a very thin metal rim. No horizon, no visible front elevation, no side-dominant composition and no three-quarter product-photo view. The subject is a compact rectangular industrial gearbox motor housing belonging to the same general mechanical category as the reference image but with a clearly different geometry.
+              <textarea id="prompt" rows="14">Machine-vision dataset photograph from a fixed ceiling camera in a real factory. True nadir plan view with the optical axis perpendicular to the conveyor, equivalent to 90-degree elevation. The horizontal conveyor belt and metal inspection fixture fill the entire background edge-to-edge. There is no distant background. The workpiece top face fills about 70 percent of the image and appears in its true plan-view shape with parallel opposite edges. Only a razor-thin outer rim may be visible; the front and side faces must be hidden.
 
-Physically plausible cast aluminum body with structural reinforcement ribs, recessed cast cavities, cooling fins, machined mounting surfaces, threaded circular holes, mounting holes, correctly seated bolts and screws, machined edges, and optional cylindrical metal shafts protruding from one or more sides. The upper surface may contain mechanically plausible features such as bearing seats, mounting flanges, recessed panels, raised covers, machined openings, structural ribs, shaft interfaces, bolt patterns or flat cast surfaces.
+Create a clearly different but mechanically plausible compact cast-aluminum industrial gearbox housing. Redesign the external silhouette, proportions, ribs, recessed cavities, cooling fins, mounting ears, machined surfaces, circular threaded holes, bolt pattern and optional shaft locations. Keep drilled holes circular and fasteners rigid and correctly seated. Do not require a large circular feature at the center; dominant features may be rectangular, irregular, offset, recessed or absent.
 
-Do not require a large circular feature at the center. The dominant mechanical feature may be circular, rectangular, irregular, offset from the center, partially recessed, or absent entirely. Circular bearings, openings and flanges may appear in different positions and sizes, but should not be repeated as the same central design across every generated image.
+Use realistic aluminum texture, machining marks, scratches, grease, dust, oxidation, localized overhead point light, contact shadows, mild smartphone noise and imperfect exposure. Documentary factory inspection photography, photorealistic and physically plausible, not CGI, not CAD and not a clean studio product photograph.
 
-Realistic cast aluminum texture with machining marks, scratches, grease residue, dust, oxidation and minor manufacturing imperfections. Mechanically plausible construction and proportions. Vary the exact external silhouette, proportions, positions, sizes and arrangement of ribs, holes, mounting points, screws, shafts, cavities, flanges and auxiliary mechanical features while preserving realistic gearbox engineering.
-
-The workpiece is located on a real industrial factory conveyor belt or metal production-line fixture, surrounded by metal guide rails, machinery, cables, containers, tools and partially visible factory equipment. Uneven low-light industrial environment with dim ambient illumination and a localized overhead point light, producing directional highlights, strong contact shadows, dark recessed regions, partial underexposure and realistic metallic specular reflections.
-
-Slight smartphone sensor noise, imperfect exposure, mild perspective distortion and natural depth of field. Documentary factory inspection photography, photorealistic and physically plausible, not CGI, not CAD, not a clean studio product photograph.</textarea>
+Composition is mandatory: flat overhead inspection frame, top surface facing the viewer, no front elevation, no side elevation, no three-quarter view, no horizon, no vanishing point, no ceiling, no walls, no shelves, no distant machinery, no visible camera or inspection head.</textarea>
             </label>
             <label>避免項目（留空使用內建值）
-              <textarea id="negativePrompt" rows="3" placeholder="內建會排除假孔洞、融合螺絲、CGI、模糊與浮水印">camera elevation below 85 degrees, low camera angle, eye-level view, oblique perspective, three-quarter product photo, visible front face, visible side face, side-dominant composition, strong trapezoid perspective, horizon line</textarea>
+              <textarea id="negativePrompt" rows="3" placeholder="內建會排除假孔洞、融合螺絲、CGI、模糊與浮水印">low angle, eye level, oblique camera, three-quarter product photo, visible front face, visible side face, side-dominant composition, trapezoid perspective, horizon, vanishing point, ceiling, walls, shelves, distant factory interior, camera head</textarea>
             </label>
           </article>
 
