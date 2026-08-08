@@ -117,7 +117,7 @@
                 <option value="strict">嚴格保留孔洞與螺絲（建議）</option>
                 <option value="shape_variation">機械形狀變體（改輪廓與比例）</option>
                 <option value="balanced">平衡保真與變化</option>
-                <option value="creative">高變化（需要更嚴格人工淘汰）</option>
+                <option value="creative" selected>高變化（需要更嚴格人工淘汰）</option>
               </select>
             </label>
             <label>工廠場景
@@ -136,10 +136,20 @@
               嚴格模式主要改變光線、材質與背景，並限制結構變形；任何不圓的孔洞、融合或漂浮螺絲仍應直接淘汰。
             </div>
             <label>場景與工件描述
-              <textarea id="prompt" rows="7">Realistic smartphone photograph of a different three-dimensional industrial motor housing, physically plausible cast aluminum body, cooling fins, correctly seated bolts and threaded circular holes, natural contact shadows, real machining marks, varied but mechanically possible hole and screw arrangement, documentary photography</textarea>
+              <textarea id="prompt" rows="14">Realistic photograph from a ceiling-mounted factory inspection camera positioned directly above the workpiece. Use an 88 to 90 degree elevation above the work surface so the optical axis is almost perpendicular to the upper face. The top face must fill most of the frame and appear close to its true plan-view shape, with nearly parallel opposite edges instead of a strong trapezoid. Hide the front and side faces except for a very thin metal rim. No horizon, no visible front elevation, no side-dominant composition and no three-quarter product-photo view. The subject is a compact rectangular industrial gearbox motor housing belonging to the same general mechanical category as the reference image but with a clearly different geometry.
+
+Physically plausible cast aluminum body with structural reinforcement ribs, recessed cast cavities, cooling fins, machined mounting surfaces, threaded circular holes, mounting holes, correctly seated bolts and screws, machined edges, and optional cylindrical metal shafts protruding from one or more sides. The upper surface may contain mechanically plausible features such as bearing seats, mounting flanges, recessed panels, raised covers, machined openings, structural ribs, shaft interfaces, bolt patterns or flat cast surfaces.
+
+Do not require a large circular feature at the center. The dominant mechanical feature may be circular, rectangular, irregular, offset from the center, partially recessed, or absent entirely. Circular bearings, openings and flanges may appear in different positions and sizes, but should not be repeated as the same central design across every generated image.
+
+Realistic cast aluminum texture with machining marks, scratches, grease residue, dust, oxidation and minor manufacturing imperfections. Mechanically plausible construction and proportions. Vary the exact external silhouette, proportions, positions, sizes and arrangement of ribs, holes, mounting points, screws, shafts, cavities, flanges and auxiliary mechanical features while preserving realistic gearbox engineering.
+
+The workpiece is located on a real industrial factory conveyor belt or metal production-line fixture, surrounded by metal guide rails, machinery, cables, containers, tools and partially visible factory equipment. Uneven low-light industrial environment with dim ambient illumination and a localized overhead point light, producing directional highlights, strong contact shadows, dark recessed regions, partial underexposure and realistic metallic specular reflections.
+
+Slight smartphone sensor noise, imperfect exposure, mild perspective distortion and natural depth of field. Documentary factory inspection photography, photorealistic and physically plausible, not CGI, not CAD, not a clean studio product photograph.</textarea>
             </label>
             <label>避免項目（留空使用內建值）
-              <textarea id="negativePrompt" rows="3" placeholder="內建會排除假孔洞、融合螺絲、CGI、模糊與浮水印"></textarea>
+              <textarea id="negativePrompt" rows="3" placeholder="內建會排除假孔洞、融合螺絲、CGI、模糊與浮水印">camera elevation below 85 degrees, low camera angle, eye-level view, oblique perspective, three-quarter product photo, visible front face, visible side face, side-dominant composition, strong trapezoid perspective, horizon line</textarea>
             </label>
           </article>
 

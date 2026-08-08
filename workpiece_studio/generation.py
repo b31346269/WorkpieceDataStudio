@@ -55,6 +55,11 @@ FLUX_BALANCED_PROMPT = (
 )
 
 FLUX_CREATIVE_PROMPT = (
+    "Use a ceiling-mounted factory inspection camera directly above the conveyor. "
+    "Keep the optical axis almost perpendicular to the work surface at an 88 to "
+    "90 degree elevation. The top face must appear nearly rectangular with almost "
+    "parallel edges and must dominate the image. Hide the front and side faces "
+    "except for a very thin rim; do not use a three-quarter product-photo view. "
     "Completely redesign the reference as a different but functional industrial "
     "mechanical housing. Use a new silhouette, proportions, ribs, cooling fins, "
     "mounting ears and cavity layout. Keep continuous metal, circular drilled "
@@ -548,6 +553,13 @@ class Flux2KleinGenerator:
                 else DEFAULT_NEGATIVE_PROMPT
             )
             prompt = f"{prompt} Avoid these defects: {avoid}."
+            # Keep image conditioning in every mode. The uploaded workpiece
+            # photographs provide the desired near-overhead inspection-camera
+            # composition. Text-only creative generation tends to fall back to
+            # a low, three-quarter product-photo angle even when the prompt asks
+            # for 85--90 degrees. Creative mode still requests a redesigned
+            # housing, but the reference anchors camera elevation and framing.
+            text_only_recompose = False
             prepared = prepare_reference(reference, settings.framing, size=1024)
             steps = 4
             generator = self._torch.Generator(device="cuda").manual_seed(settings.seed)
@@ -563,7 +575,11 @@ class Flux2KleinGenerator:
             return result.convert("RGB"), {
                 "effective_steps": steps,
                 "effective_guidance_scale": 1.0,
-                "reference_conditioning": "native_image_edit",
+                "reference_conditioning": (
+                    "text_only_recompose"
+                    if text_only_recompose
+                    else "native_image_edit"
+                ),
             }
 
 

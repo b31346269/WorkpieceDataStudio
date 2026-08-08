@@ -40,8 +40,8 @@ class CandidateUpdate(BaseModel):
 
 class GenerationRequest(BaseModel):
     reference_id: str
-    prompt: str = Field(min_length=3, max_length=2000)
-    negative_prompt: str = Field(default="", max_length=2000)
+    prompt: str = Field(min_length=3, max_length=6000)
+    negative_prompt: str = Field(default="", max_length=6000)
     count: int = Field(default=4, ge=1, le=100)
     seed: int | None = None
     strength: float = Field(default=0.34, ge=0.05, le=0.95)
