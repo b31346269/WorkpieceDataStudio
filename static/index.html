@@ -136,16 +136,16 @@
               嚴格模式主要改變光線、材質與背景，並限制結構變形；任何不圓的孔洞、融合或漂浮螺絲仍應直接淘汰。
             </div>
             <label>場景與工件描述
-              <textarea id="prompt" rows="14">Machine-vision dataset photograph from a fixed ceiling camera in a real factory. True nadir plan view with the optical axis perpendicular to the conveyor, equivalent to 90-degree elevation. The horizontal conveyor belt and metal inspection fixture fill the entire background edge-to-edge. There is no distant background. The workpiece top face fills about 70 percent of the image and appears in its true plan-view shape with parallel opposite edges. Only a razor-thin outer rim may be visible; the front and side faces must be hidden.
+              <textarea id="prompt" rows="14">Machine-vision dataset photograph from a high fixed factory inspection camera. Use an 80 to 90 degree elevation above the conveyor, keeping the optical axis close to perpendicular to the work surface. The horizontal conveyor belt and metal inspection fixture fill the entire background edge-to-edge. There is no distant background. The workpiece top face fills about 70 percent of the image, remains the dominant visible surface and appears close to its true plan-view shape with nearly parallel opposite edges. A shallow side rim may be visible for realistic depth, but it must occupy only a small fraction of the workpiece and must never dominate the image.
 
 Create a clearly different but mechanically plausible compact cast-aluminum industrial gearbox housing. Redesign the external silhouette, proportions, ribs, recessed cavities, cooling fins, mounting ears, machined surfaces, circular threaded holes, bolt pattern and optional shaft locations. Keep drilled holes circular and fasteners rigid and correctly seated. Do not require a large circular feature at the center; dominant features may be rectangular, irregular, offset, recessed or absent.
 
 Use realistic aluminum texture, machining marks, scratches, grease, dust, oxidation, localized overhead point light, contact shadows, mild smartphone noise and imperfect exposure. Documentary factory inspection photography, photorealistic and physically plausible, not CGI, not CAD and not a clean studio product photograph.
 
-Composition is mandatory: flat overhead inspection frame, top surface facing the viewer, no front elevation, no side elevation, no three-quarter view, no horizon, no vanishing point, no ceiling, no walls, no shelves, no distant machinery, no visible camera or inspection head.</textarea>
+Composition is mandatory: high-angle overhead inspection frame between 80 and 90 degrees, top surface facing the viewer, only limited shallow side visibility, no low oblique angle, no three-quarter product view, no horizon, no strong vanishing point, no ceiling, no walls, no shelves, no distant machinery, no visible camera or inspection head.</textarea>
             </label>
             <label>避免項目（留空使用內建值）
-              <textarea id="negativePrompt" rows="3" placeholder="內建會排除假孔洞、融合螺絲、CGI、模糊與浮水印">low angle, eye level, oblique camera, three-quarter product photo, visible front face, visible side face, side-dominant composition, trapezoid perspective, horizon, vanishing point, ceiling, walls, shelves, distant factory interior, camera head</textarea>
+              <textarea id="negativePrompt" rows="3" placeholder="內建會排除假孔洞、融合螺絲、CGI、模糊與浮水印">camera elevation below 80 degrees, low angle, eye level, strongly oblique camera, three-quarter product photo, large visible front face, large visible side face, side-dominant composition, strong trapezoid perspective, horizon, strong vanishing point, ceiling, walls, shelves, distant factory interior, camera head</textarea>
             </label>
           </article>
 
