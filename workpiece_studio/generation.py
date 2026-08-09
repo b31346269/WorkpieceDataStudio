@@ -29,8 +29,9 @@ DEFAULT_NEGATIVE_PROMPT = (
     "a drive recess, circular outline without a cavity, center dot instead of a drive "
     "recess, smooth raised cylindrical boss, smooth vertical post, blank cylindrical "
     "cap, raised dowel, all holes and no installed screws, zero visible screws, "
-    "empty threaded holes used instead of screws, rivet, cylindrical plug mistaken "
-    "for a screw, blurry, "
+    "empty threaded holes used instead of screws, headless threaded stud, protruding "
+    "threaded rod, bare male thread above the workpiece, set screw without a visible "
+    "drive head, rivet, cylindrical plug mistaken for a screw, blurry, "
     "low resolution, watermark, text"
 )
 
@@ -53,9 +54,11 @@ FASTENER_REALISM_PROMPT = (
     "anywhere on the workpiece because it can be confused with a screw. Every raised "
     "cylindrical feature must instead be either an open bore or bearing seat with a "
     "clearly visible deep opening, or a fastener with one of the required recessed "
-    "drives. Keep each fastener straight, correctly scaled, seated "
-    "flush against a machined surface or washer, with a small realistic contact "
-    "shadow and visible threads only where physically exposed. Do not fuse screws "
+    "drives. Never create a headless threaded stud, protruding threaded rod, exposed "
+    "set screw or bare male thread on the workpiece: every installed fastener must "
+    "terminate in a clearly visible recessed-drive head. Keep each fastener straight, "
+    "correctly scaled and seated flush against a machined surface or washer, with a "
+    "small realistic contact shadow. Do not fuse screws "
     "into the casting and do not create floating, melted or decorative fasteners. "
 )
 
