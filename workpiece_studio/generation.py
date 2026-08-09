@@ -143,6 +143,30 @@ def focus_crop_square(image: Image.Image, size: int = 640) -> Image.Image:
     )
 
 
+def inset_for_outpaint(
+    image: Image.Image,
+    size: int = 1024,
+    occupancy: float = 0.62,
+) -> Image.Image:
+    source = ImageOps.exif_transpose(image).convert("RGB")
+    background = ImageOps.fit(
+        source,
+        (size, size),
+        method=Image.Resampling.BILINEAR,
+    )
+    background = background.filter(ImageFilter.GaussianBlur(radius=38))
+    background = ImageEnhance.Brightness(background).enhance(0.62)
+    inset_size = max(1, round(size * occupancy))
+    inset = ImageOps.fit(
+        source,
+        (inset_size, inset_size),
+        method=Image.Resampling.LANCZOS,
+    )
+    offset = (size - inset_size) // 2
+    background.paste(inset, (offset, offset))
+    return background
+
+
 def prepare_reference(
     image: Image.Image,
     framing: str,
@@ -582,12 +606,7 @@ class Flux2KleinGenerator:
             # for 85--90 degrees. Creative mode still requests a redesigned
             # housing, but the reference anchors camera elevation and framing.
             text_only_recompose = False
-            effective_framing = (
-                "letterbox"
-                if settings.quality_mode == "creative"
-                else settings.framing
-            )
-            prepared = prepare_reference(reference, effective_framing, size=1024)
+            prepared = prepare_reference(reference, settings.framing, size=1024)
             steps = 4
             generator = self._torch.Generator(device="cuda").manual_seed(settings.seed)
             result = self._pipe(
@@ -599,6 +618,41 @@ class Flux2KleinGenerator:
                 num_inference_steps=steps,
                 generator=generator,
             ).images[0]
+
+            generation_passes = 1
+            effective_framing = settings.framing
+            if settings.quality_mode == "creative":
+                outpaint_reference = inset_for_outpaint(
+                    result,
+                    size=1024,
+                    occupancy=0.62,
+                )
+                outpaint_prompt = (
+                    "Preserve the generated workpiece exactly, including its "
+                    "silhouette, central flange, ribs, holes and fasteners. Do not "
+                    "redesign, add or remove any mechanical feature. Keep the "
+                    "workpiece centered at the smaller scale shown in the input, "
+                    "occupying 35 to 50 percent of the complete frame. Naturally "
+                    "outpaint the surrounding horizontal factory work surface and "
+                    "local fixture on every side. Maintain an apparent 80 to 90 "
+                    "degree overhead view and show side walls only as a thin rim. "
+                    "No horizon, distant room, camera, spindle, probe or lamp. "
+                    f"{prompt}"
+                )
+                outpaint_generator = self._torch.Generator(
+                    device="cuda"
+                ).manual_seed(settings.seed + 1_000_003)
+                result = self._pipe(
+                    image=outpaint_reference,
+                    prompt=outpaint_prompt,
+                    height=1024,
+                    width=1024,
+                    guidance_scale=1.0,
+                    num_inference_steps=steps,
+                    generator=outpaint_generator,
+                ).images[0]
+                generation_passes = 2
+                effective_framing = "two_stage_outpaint"
             return result.convert("RGB"), {
                 "effective_steps": steps,
                 "effective_guidance_scale": 1.0,
@@ -608,6 +662,7 @@ class Flux2KleinGenerator:
                     else "native_image_edit"
                 ),
                 "effective_reference_framing": effective_framing,
+                "generation_passes": generation_passes,
             }
 
 
