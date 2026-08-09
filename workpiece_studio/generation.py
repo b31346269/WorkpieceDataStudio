@@ -57,7 +57,9 @@ FLUX_BALANCED_PROMPT = (
 FLUX_CREATIVE_PROMPT = (
     "Use an unseen high-mounted factory inspection camera outside the frame. "
     "Keep the optical axis close to perpendicular to the work surface at an 80 to "
-    "90 degree elevation. The top face must appear nearly rectangular with almost "
+    "90 degree elevation. Keep a realistic camera-to-workpiece working distance "
+    "of 30 to 45 cm, preferably 35 to 40 cm, with a normal lens rather than an "
+    "ultra-wide lens. The top face must appear nearly rectangular with almost "
     "parallel edges and must dominate the image. A shallow side rim may provide "
     "limited depth, but it must not dominate; do not use a three-quarter view. "
     "Nothing may hang above the workpiece and no camera, spindle, probe or "
