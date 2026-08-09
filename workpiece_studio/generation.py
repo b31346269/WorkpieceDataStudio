@@ -59,12 +59,15 @@ FLUX_CREATIVE_PROMPT = (
     "Keep the optical axis almost perpendicular to the work surface at an 88 to "
     "90 degree elevation. This compensates for the model's tendency to generate "
     "angles that are too low. Keep a realistic camera-to-workpiece working distance "
-    "of 30 to 45 cm, preferably 35 to 40 cm, with a normal lens rather than an "
+    "of 45 to 60 cm, preferably 50 to 55 cm, with a normal lens rather than an "
     "ultra-wide lens. The top face must appear nearly rectangular with almost "
     "parallel edges and must dominate the image. Side walls must occupy less than "
     "10 percent of the visible workpiece height; do not use a three-quarter view. "
     "Nothing may hang above the workpiece and no camera, spindle, probe or "
     "inspection head may appear inside the image. "
+    "Use the input reference photograph strictly as a camera-pose and framing "
+    "template: match its overhead viewpoint and its small top-to-side visibility "
+    "ratio, while changing the workpiece geometry, material details and scene. "
     "Completely redesign the reference as a different but functional industrial "
     "mechanical housing. Use a new silhouette, proportions, ribs, cooling fins, "
     "mounting ears and cavity layout. Keep continuous metal, circular drilled "
@@ -579,7 +582,12 @@ class Flux2KleinGenerator:
             # for 85--90 degrees. Creative mode still requests a redesigned
             # housing, but the reference anchors camera elevation and framing.
             text_only_recompose = False
-            prepared = prepare_reference(reference, settings.framing, size=1024)
+            effective_framing = (
+                "letterbox"
+                if settings.quality_mode == "creative"
+                else settings.framing
+            )
+            prepared = prepare_reference(reference, effective_framing, size=1024)
             steps = 4
             generator = self._torch.Generator(device="cuda").manual_seed(settings.seed)
             result = self._pipe(
@@ -599,6 +607,7 @@ class Flux2KleinGenerator:
                     if text_only_recompose
                     else "native_image_edit"
                 ),
+                "effective_reference_framing": effective_framing,
             }
 
 
