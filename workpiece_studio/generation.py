@@ -55,11 +55,13 @@ FLUX_BALANCED_PROMPT = (
 )
 
 FLUX_CREATIVE_PROMPT = (
-    "Use a ceiling-mounted factory inspection camera directly above the conveyor. "
+    "Use an unseen high-mounted factory inspection camera outside the frame. "
     "Keep the optical axis close to perpendicular to the work surface at an 80 to "
     "90 degree elevation. The top face must appear nearly rectangular with almost "
     "parallel edges and must dominate the image. A shallow side rim may provide "
     "limited depth, but it must not dominate; do not use a three-quarter view. "
+    "Nothing may hang above the workpiece and no camera, spindle, probe or "
+    "inspection head may appear inside the image. "
     "Completely redesign the reference as a different but functional industrial "
     "mechanical housing. Use a new silhouette, proportions, ribs, cooling fins, "
     "mounting ears and cavity layout. Keep continuous metal, circular drilled "
