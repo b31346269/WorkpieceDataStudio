@@ -59,7 +59,7 @@ FLUX_CREATIVE_PROMPT = (
     "Keep the optical axis almost perpendicular to the work surface at an 88 to "
     "90 degree elevation. This compensates for the model's tendency to generate "
     "angles that are too low. Keep a realistic camera-to-workpiece working distance "
-    "of 45 to 60 cm, preferably 50 to 55 cm, with a normal lens rather than an "
+    "of 70 to 90 cm, preferably about 80 cm, with a normal lens rather than an "
     "ultra-wide lens. The top face must appear nearly rectangular with almost "
     "parallel edges and must dominate the image. Side walls must occupy less than "
     "10 percent of the visible workpiece height; do not use a three-quarter view. "
@@ -625,14 +625,15 @@ class Flux2KleinGenerator:
                 outpaint_reference = inset_for_outpaint(
                     result,
                     size=1024,
-                    occupancy=0.62,
+                    occupancy=0.42,
                 )
                 outpaint_prompt = (
                     "Preserve the generated workpiece exactly, including its "
                     "silhouette, central flange, ribs, holes and fasteners. Do not "
                     "redesign, add or remove any mechanical feature. Keep the "
                     "workpiece centered at the smaller scale shown in the input, "
-                    "occupying 35 to 50 percent of the complete frame. Naturally "
+                    "occupying only 20 to 30 percent of the complete frame. "
+                    "Leave broad, continuous work-surface margin on every side. Naturally "
                     "outpaint the surrounding horizontal factory work surface and "
                     "local fixture on every side. Maintain an apparent 80 to 90 "
                     "degree overhead view and show side walls only as a thin rim. "
