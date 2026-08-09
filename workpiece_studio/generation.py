@@ -27,7 +27,8 @@ DEFAULT_NEGATIVE_PROMPT = (
     "metal cap presented as a screw, featureless circular fastener head, blank-top "
     "external hex bolt, smooth machined bolt head, shallow engraved ring instead of "
     "a drive recess, circular outline without a cavity, center dot instead of a drive "
-    "recess, rivet, cylindrical plug mistaken for a screw, blurry, "
+    "recess, smooth raised cylindrical boss, smooth vertical post, blank cylindrical "
+    "cap, raised dowel, rivet, cylindrical plug mistaken for a screw, blurry, "
     "low resolution, watermark, text"
 )
 
@@ -41,8 +42,11 @@ FASTENER_REALISM_PROMPT = (
     "combination heads, but never use a conventional blank-top external hex bolt. "
     "The recess must have visible depth, crisp edges and a contact shadow: a shallow "
     "engraved circle, concentric ring, tiny center dot or painted symbol is not a drive "
-    "recess. A smooth featureless metal top is a plug, boss or dowel and must never be "
-    "presented as a screw. Keep each fastener straight, correctly scaled, seated "
+    "recess. Do not place any smooth raised cylindrical boss, plug, cap, post or dowel "
+    "anywhere on the workpiece because it can be confused with a screw. Every raised "
+    "cylindrical feature must instead be either an open bore or bearing seat with a "
+    "clearly visible deep opening, or a fastener with one of the required recessed "
+    "drives. Keep each fastener straight, correctly scaled, seated "
     "flush against a machined surface or washer, with a small realistic contact "
     "shadow and visible threads only where physically exposed. Do not fuse screws "
     "into the casting and do not create floating, melted or decorative fasteners. "
