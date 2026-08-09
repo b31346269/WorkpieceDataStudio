@@ -15,6 +15,21 @@ const state = {
 
 const COLORS = ["#55d6be", "#ffb45b", "#70a8ff", "#d98cff", "#ff6978"];
 
+const OVERHEAD_FACTORY_BASE = `Machine-vision dataset photograph from a high fixed factory inspection camera. Use an 80 to 90 degree elevation above the conveyor, keeping the optical axis close to perpendicular to the work surface. The horizontal conveyor belt and metal inspection fixture fill the entire background edge-to-edge. There is no distant background. The workpiece top face fills about 70 percent of the image, remains the dominant visible surface and appears close to its true plan-view shape with nearly parallel opposite edges. A shallow side rim may be visible for realistic depth, but it must occupy only a small fraction of the workpiece and must never dominate the image.`;
+
+const FACTORY_REALISM = `Use realistic aluminum texture, machining marks, scratches, grease, dust, oxidation, localized overhead point light, contact shadows, mild smartphone noise and imperfect exposure. Documentary factory inspection photography, photorealistic and physically plausible, not CGI, not CAD and not a clean studio product photograph.`;
+
+const OVERHEAD_COMPOSITION = `Composition is mandatory: high-angle overhead inspection frame between 80 and 90 degrees, top surface facing the viewer, only limited shallow side visibility, no low oblique angle, no three-quarter product view, no horizon, no strong vanishing point, no ceiling, no walls, no shelves, no distant machinery, no visible camera or inspection head.`;
+
+const WORKPIECE_RECIPES = {
+  square_center: `Create a clearly different but mechanically plausible boxy square or short-rectangular cast-aluminum gearbox housing. Include one substantial circular bearing seat, machined flange or shaft interface near the center of the top face, occupying roughly 25 to 45 percent of its width. Use a varied flange diameter and bolt pattern, four-corner or irregular mounting ears, rectilinear or radial reinforcement ribs, recessed cast cavities, cooling fins, small threaded holes and correctly seated fasteners. Change the silhouette, proportions and detailed arrangement between images; do not copy one fixed central-flange design.`,
+  offset_flange: `Create a clearly different but mechanically plausible cast-aluminum gearbox housing with a dominant bearing seat, flange or shaft interface visibly offset from the center toward a randomly selected side or corner. Use an asymmetric external silhouette, unequal mounting ears, non-mirrored reinforcement ribs, offset recessed cavities, varied cooling fins, circular threaded holes and correctly seated fasteners. Keep the structure functional and manufacturable while avoiding bilateral symmetry and repeated layouts.`,
+  no_center_circle: `Create a clearly different but mechanically plausible cast-aluminum gearbox housing with no large circular feature near the center. Make rectangular or irregular machined covers, recessed panels, rib grids, cooling-fin groups, stepped cast surfaces or offset shaft interfaces the dominant top-face features. Circular geometry is limited to smaller drilled holes, bearing seats and fasteners away from the center. Vary the silhouette, proportions, mounting ears, cavities and rib arrangement while preserving manufacturable construction.`,
+  scale_light_fixture: `Create a mechanically plausible cast-aluminum gearbox housing with strongly varied physical proportions and framing. Alternate among compact square, elongated rectangular and irregular housings; vary the workpiece occupancy from about 45 to 80 percent of the image and rotate it naturally on the fixture. Use believable conveyor pallets, clamping rails, locating pins or worn metal inspection plates. Vary dim ambient light, localized point light, mixed cool factory light, partial underexposure, hard contact shadows and metallic highlights while keeping holes and fasteners clearly reviewable.`,
+};
+
+const GENERATION_NEGATIVE = "camera elevation below 80 degrees, low angle, eye level, strongly oblique camera, three-quarter product photo, large visible front face, large visible side face, side-dominant composition, strong trapezoid perspective, horizon, strong vanishing point, ceiling, walls, shelves, distant factory interior, camera head";
+
 async function api(url, options = {}) {
   const response = await fetch(url, options);
   if (!response.ok) {
@@ -77,6 +92,7 @@ function bindEvents() {
   $("qualityMode").onchange = applyQualityPreset;
   $("provider").onchange = applyQualityPreset;
   $("scenePreset").onchange = applyScenePreset;
+  $("workpieceRecipe").onchange = applyWorkpieceRecipe;
   document.querySelectorAll(".tabs button").forEach((button) => {
     button.onclick = () => showTab(button.dataset.tab);
   });
@@ -338,6 +354,15 @@ function applyScenePreset() {
     custom: "不加入預設場景，只採用下方的自訂描述。",
   };
   $("sceneHint").textContent = hints[$("scenePreset").value];
+}
+
+function applyWorkpieceRecipe() {
+  const recipe = WORKPIECE_RECIPES[$("workpieceRecipe").value];
+  if (!recipe) return;
+  $("scenePreset").value = "custom";
+  $("prompt").value = `${OVERHEAD_FACTORY_BASE}\n\n${recipe}\n\n${FACTORY_REALISM}\n\n${OVERHEAD_COMPOSITION}`;
+  $("negativePrompt").value = GENERATION_NEGATIVE;
+  applyScenePreset();
 }
 
 async function refreshProject() {

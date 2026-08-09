@@ -135,10 +135,18 @@
             <div id="qualityHint" class="warning compact">
               嚴格模式主要改變光線、材質與背景，並限制結構變形；任何不圓的孔洞、融合或漂浮螺絲仍應直接淘汰。
             </div>
+            <label>工件生成配方
+              <select id="workpieceRecipe">
+                <option value="square_center" selected>1. 方形外殼＋中央法蘭</option>
+                <option value="offset_flange">2. 偏心法蘭＋不對稱肋條</option>
+                <option value="no_center_circle">3. 無大型中央圓形結構</option>
+                <option value="scale_light_fixture">4. 不同尺寸、照明與工廠治具</option>
+              </select>
+            </label>
             <label>場景與工件描述
               <textarea id="prompt" rows="14">Machine-vision dataset photograph from a high fixed factory inspection camera. Use an 80 to 90 degree elevation above the conveyor, keeping the optical axis close to perpendicular to the work surface. The horizontal conveyor belt and metal inspection fixture fill the entire background edge-to-edge. There is no distant background. The workpiece top face fills about 70 percent of the image, remains the dominant visible surface and appears close to its true plan-view shape with nearly parallel opposite edges. A shallow side rim may be visible for realistic depth, but it must occupy only a small fraction of the workpiece and must never dominate the image.
 
-Create a clearly different but mechanically plausible compact cast-aluminum industrial gearbox housing. Redesign the external silhouette, proportions, ribs, recessed cavities, cooling fins, mounting ears, machined surfaces, circular threaded holes, bolt pattern and optional shaft locations. Keep drilled holes circular and fasteners rigid and correctly seated. Do not require a large circular feature at the center; dominant features may be rectangular, irregular, offset, recessed or absent.
+Create a clearly different but mechanically plausible boxy square or short-rectangular cast-aluminum gearbox housing. Include one substantial circular bearing seat, machined flange or shaft interface near the center of the top face, occupying roughly 25 to 45 percent of its width. Use a varied flange diameter and bolt pattern, four-corner or irregular mounting ears, rectilinear or radial reinforcement ribs, recessed cast cavities, cooling fins, small threaded holes and correctly seated fasteners. Change the silhouette, proportions and detailed arrangement between images; do not copy one fixed central-flange design.
 
 Use realistic aluminum texture, machining marks, scratches, grease, dust, oxidation, localized overhead point light, contact shadows, mild smartphone noise and imperfect exposure. Documentary factory inspection photography, photorealistic and physically plausible, not CGI, not CAD and not a clean studio product photograph.
 
