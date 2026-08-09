@@ -23,8 +23,24 @@ DEFAULT_NEGATIVE_PROMPT = (
     "illustration, CGI, 3d render, toy, miniature, impossible mechanism, "
     "melted metal, warped metal, fused screws, floating bolt, duplicated screw, "
     "missing screw, extra screw, fake hole, painted circle, oval hole, collapsed hole, "
-    "deformed threads, malformed fastener, asymmetrical screw head, blurry, "
+    "deformed threads, malformed fastener, asymmetrical screw head, smooth round "
+    "metal cap presented as a screw, featureless circular fastener head, rivet, "
+    "cylindrical plug mistaken for a screw, blurry, "
     "low resolution, watermark, text"
+)
+
+FASTENER_REALISM_PROMPT = (
+    "Use varied but mechanically authentic industrial screws and bolts. Valid "
+    "types include external hex-head bolts, socket-head cap screws with a centered "
+    "hexagonal recess, Torx screws with a centered six-lobe recess, Phillips "
+    "cross-head screws, slotted screws, countersunk screws, button-head screws and "
+    "flange bolts. Every round screw head must show a crisp, centered and physically "
+    "plausible drive recess; a smooth featureless round metal top is a plug, boss or "
+    "dowel and must never be presented as a screw. External hex bolts must have a "
+    "clear six-sided outline. Keep each fastener straight, correctly scaled, seated "
+    "flush against a machined surface or washer, with a small realistic contact "
+    "shadow and visible threads only where physically exposed. Do not fuse screws "
+    "into the casting and do not create floating, melted or decorative fasteners. "
 )
 
 STRICT_MECHANICAL_PROMPT = (
@@ -585,12 +601,14 @@ class Flux2KleinGenerator:
                     settings.seed,
                 )
                 prompt = (
-                    f"{mode_prompt} {scene_prompt} {settings.prompt.strip()}"
+                    f"{mode_prompt} {FASTENER_REALISM_PROMPT} {scene_prompt} "
+                    f"{settings.prompt.strip()}"
                 ).strip()
             else:
                 prompt = compose_prompt(
                     settings,
-                    f"{mode_prompt} {settings.prompt.strip()}",
+                    f"{mode_prompt} {FASTENER_REALISM_PROMPT} "
+                    f"{settings.prompt.strip()}",
                 )
             custom_negative = settings.negative_prompt.strip()
             avoid = (
