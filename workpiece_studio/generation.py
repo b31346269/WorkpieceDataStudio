@@ -56,12 +56,13 @@ FLUX_BALANCED_PROMPT = (
 
 FLUX_CREATIVE_PROMPT = (
     "Use an unseen high-mounted factory inspection camera outside the frame. "
-    "Keep the optical axis close to perpendicular to the work surface at an 80 to "
-    "90 degree elevation. Keep a realistic camera-to-workpiece working distance "
+    "Keep the optical axis almost perpendicular to the work surface at an 88 to "
+    "90 degree elevation. This compensates for the model's tendency to generate "
+    "angles that are too low. Keep a realistic camera-to-workpiece working distance "
     "of 30 to 45 cm, preferably 35 to 40 cm, with a normal lens rather than an "
     "ultra-wide lens. The top face must appear nearly rectangular with almost "
-    "parallel edges and must dominate the image. A shallow side rim may provide "
-    "limited depth, but it must not dominate; do not use a three-quarter view. "
+    "parallel edges and must dominate the image. Side walls must occupy less than "
+    "10 percent of the visible workpiece height; do not use a three-quarter view. "
     "Nothing may hang above the workpiece and no camera, spindle, probe or "
     "inspection head may appear inside the image. "
     "Completely redesign the reference as a different but functional industrial "
@@ -72,24 +73,29 @@ FLUX_CREATIVE_PROMPT = (
 
 FACTORY_SCENE_PROMPTS = {
     "assembly_line": (
-        "Place the workpiece on a real factory assembly-line metal bench with "
-        "fixtures, safety markings and overhead fluorescent lighting."
+        "Show only the horizontal top surface of a real factory assembly-line "
+        "metal bench filling the frame, with cropped fixtures and safety markings "
+        "around the workpiece; no distant production line or factory interior."
     ),
     "machine_enclosure": (
-        "Place the workpiece inside a CNC machine enclosure with brushed metal "
-        "walls, cool LED task lighting, mild oil residue and realistic shadows."
+        "Show only a horizontal CNC pallet or machine-table surface filling the "
+        "frame, with T-slots, clamps, cool task light and mild oil residue; no "
+        "enclosure walls, spindle, probe or distant background."
     ),
     "maintenance_bench": (
-        "Place the workpiece on a used industrial maintenance bench with subtle "
-        "oil stains, nearby hand tools and mixed warm and cool workshop light."
+        "Show only a horizontal used metal maintenance-bench surface filling the "
+        "frame, with oil stains and a few cropped hand tools confined to the outer "
+        "edges; no room interior, shelves, horizon or distant background."
     ),
     "conveyor_fixture": (
-        "Place the workpiece in a believable conveyor inspection fixture with "
-        "clamps, machined rails and directional factory lighting."
+        "Show only the horizontal surface of a conveyor inspection fixture filling "
+        "the frame, with cropped clamps, rollers and machined rails surrounding the "
+        "workpiece; no distant conveyor line or factory interior."
     ),
     "warehouse_inspection": (
-        "Place the workpiece at a warehouse quality-inspection station with a "
-        "neutral metal surface, side daylight and overhead industrial lamps."
+        "Show only the horizontal metal surface of a quality-inspection station "
+        "filling the frame, with cropped locating blocks and mixed task lighting; "
+        "no warehouse interior, shelves, walls, lamps or horizon."
     ),
 }
 
@@ -546,10 +552,19 @@ class Flux2KleinGenerator:
                 "balanced": FLUX_BALANCED_PROMPT,
                 "creative": FLUX_CREATIVE_PROMPT,
             }.get(settings.quality_mode, FLUX_BALANCED_PROMPT)
-            prompt = compose_prompt(
-                settings,
-                f"{mode_prompt} {settings.prompt.strip()}",
-            )
+            if settings.quality_mode == "creative":
+                scene_prompt, _ = resolve_scene_prompt(
+                    settings.scene_preset,
+                    settings.seed,
+                )
+                prompt = (
+                    f"{mode_prompt} {scene_prompt} {settings.prompt.strip()}"
+                ).strip()
+            else:
+                prompt = compose_prompt(
+                    settings,
+                    f"{mode_prompt} {settings.prompt.strip()}",
+                )
             custom_negative = settings.negative_prompt.strip()
             avoid = (
                 f"{DEFAULT_NEGATIVE_PROMPT}, {custom_negative}"
