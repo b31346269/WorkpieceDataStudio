@@ -28,7 +28,9 @@ DEFAULT_NEGATIVE_PROMPT = (
     "external hex bolt, smooth machined bolt head, shallow engraved ring instead of "
     "a drive recess, circular outline without a cavity, center dot instead of a drive "
     "recess, smooth raised cylindrical boss, smooth vertical post, blank cylindrical "
-    "cap, raised dowel, rivet, cylindrical plug mistaken for a screw, blurry, "
+    "cap, raised dowel, all holes and no installed screws, zero visible screws, "
+    "empty threaded holes used instead of screws, rivet, cylindrical plug mistaken "
+    "for a screw, blurry, "
     "low resolution, watermark, text"
 )
 
@@ -36,6 +38,11 @@ FASTENER_REALISM_PROMPT = (
     "Use varied but mechanically authentic industrial screws and bolts. Every visible "
     "fastener intended as a screw must have a clearly recessed drive cavity in the "
     "center of its top face; this requirement also applies to hexagonal outer heads. "
+    "Each generated workpiece must visibly contain both empty holes and installed "
+    "screws: approximately 8 to 18 mechanically plausible drilled or threaded holes "
+    "and 3 to 6 clearly visible screws seated in separate mounting positions. Never "
+    "satisfy the screw requirement with empty threaded holes. Use one or two drive "
+    "styles within one image and rotate the drive-style selection across the batch. "
     "Use a varied mix of deep internal-hex sockets, deep six-lobe Torx sockets, "
     "recessed Phillips crosses and recessed straight slots. Vary the outer profile "
     "among cylindrical socket-cap, button-head, countersunk, flange and hexagonal "
