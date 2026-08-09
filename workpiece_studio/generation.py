@@ -637,7 +637,10 @@ class Flux2KleinGenerator:
                     "local fixture on every side. Maintain an apparent 80 to 90 "
                     "degree overhead view and show side walls only as a thin rim. "
                     "No horizon, distant room, camera, spindle, probe or lamp. "
-                    f"{prompt}"
+                    f"Use this local surface setting: {scene_prompt} "
+                    "Photorealistic industrial inspection photography with a "
+                    "continuous, naturally extended work surface. Avoid visible "
+                    f"seams, frames or blurred borders. Avoid: {avoid}."
                 )
                 outpaint_generator = self._torch.Generator(
                     device="cuda"
