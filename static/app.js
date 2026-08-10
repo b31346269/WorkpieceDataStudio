@@ -687,9 +687,6 @@ async function saveCandidate(status) {
     return toast("流程測試圖不能接受為訓練資料，請用真實 AI 模式生成。", true);
   }
   const qualityChecks = {};
-  if (status === "approved" && !Object.values(qualityChecks).every(Boolean)) {
-    return toast("接受前請完成四項機械合理性檢查。", true);
-  }
   try {
     await api(`/api/projects/${state.project.id}/candidates/${candidate.id}`, {
       method: "PUT",
