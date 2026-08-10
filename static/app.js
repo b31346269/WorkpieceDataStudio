@@ -312,9 +312,9 @@ function applyQualityPreset() {
       hint: "嚴格模式主要改變光線、材質與背景，並限制結構變形；任何不圓的孔洞、融合或漂浮螺絲仍應直接淘汰。",
     },
     shape_variation: {
-      strength: 0.64,
-      adapter: 0.60,
-      steps: 40,
+      strength: 0.50,
+      adapter: 0.70,
+      steps: 36,
       hint: "形狀變體會明顯改變工件外輪廓、比例、散熱鰭片與安裝耳；ControlNet 只在前段保護機械邊緣，請特別檢查孔洞是否仍位於實體金屬上。",
     },
     balanced: {
