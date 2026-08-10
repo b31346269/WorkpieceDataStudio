@@ -387,7 +387,7 @@ async function startGeneration() {
   const payload = {
     reference_id: $("generationReference").value,
     prompt: `${$("prompt").value}\nSparse-hole constraint: use approximately 4 to 8 small empty holes only, with broad empty cast surfaces; the large central bearing opening is one flange feature and is not counted. Never create dense rows or grids of holes.`,
-    negative_prompt: `${$("negativePrompt").value}, dense rows of holes, dense hole grid, more than eight small holes on the top face, repeated hole pattern`,
+    negative_prompt: `${$("negativePrompt").value}, dense rows of holes, dense hole grid, more than eight small holes on the top face, repeated hole pattern, screws on the conveyor, screws on the fixture, loose bolts in the background, fasteners outside the workpiece`,
     count: Number($("generationCount").value),
     seed: seedValue ? Number(seedValue) : null,
     strength: Number($("strength").value),
