@@ -306,8 +306,8 @@ async function deleteUploadedModel(modelId) {
 function applyQualityPreset() {
   const presets = {
     strict: {
-      strength: 0.34,
-      adapter: 0.82,
+      strength: 0.18,
+      adapter: 0.98,
       steps: 32,
       hint: "嚴格模式主要改變光線、材質與背景，並限制結構變形；任何不圓的孔洞、融合或漂浮螺絲仍應直接淘汰。",
     },
