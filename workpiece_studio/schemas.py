@@ -71,7 +71,7 @@ class GenerationRequest(BaseModel):
         "mock",
     ] = "diffusers"
     prelabel: bool = True
-    confidence: float = Field(default=0.18, ge=0.01, le=0.99)
+    confidence: float = Field(default=0.35, ge=0.01, le=0.99)
     yolo_model_id: str = ""
 
 
