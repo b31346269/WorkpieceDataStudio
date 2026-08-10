@@ -198,6 +198,17 @@ def candidate_image(project_id: str, candidate_id: str) -> FileResponse:
         raise api_error(exc, 404) from exc
 
 
+@app.delete("/api/projects/{project_id}/candidates/{candidate_id}")
+def delete_candidate(project_id: str, candidate_id: str) -> dict:
+    try:
+        candidate = store.delete_candidate(project_id, candidate_id)
+        return {"deleted": True, "candidate": candidate}
+    except FileNotFoundError as exc:
+        raise api_error(exc, 404) from exc
+    except Exception as exc:
+        raise api_error(exc) from exc
+
+
 @app.put("/api/projects/{project_id}/candidates/{candidate_id}")
 def update_candidate(
     project_id: str,

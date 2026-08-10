@@ -326,6 +326,18 @@ class ProjectStore:
         metadata = self.get_candidate(project_id, candidate_id)
         return self.project_root(project_id) / "candidates" / metadata["filename"]
 
+    def delete_candidate(self, project_id: str, candidate_id: str) -> dict[str, Any]:
+        if not re.fullmatch(r"[a-f0-9]{32}", candidate_id):
+            raise ValueError("Invalid candidate id.")
+        root = self.project_root(project_id)
+        metadata_path = root / "metadata" / f"candidate-{candidate_id}.json"
+        metadata = self._read_json(metadata_path)
+        image_path = root / "candidates" / metadata["filename"]
+        with self._lock:
+            metadata_path.unlink(missing_ok=True)
+            image_path.unlink(missing_ok=True)
+        return metadata
+
     def delete_project(self, project_id: str) -> dict[str, Any]:
         root = self.project_root(project_id)
         project = self._read_json(root / "project.json")

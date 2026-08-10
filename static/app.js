@@ -675,6 +675,14 @@ function deleteSelectedBox() {
 async function saveCandidate(status) {
   const candidate = state.filtered[state.candidateIndex];
   if (!candidate) return;
+  if (status === "rejected") {
+    try {
+      await api(`/api/projects/${state.project.id}/candidates/${candidate.id}`, {method: "DELETE"});
+      toast("圖片已刪除。");
+      await loadCandidates();
+    } catch (error) { toast(error.message, true); }
+    return;
+  }
   if (status === "approved" && candidate.generation?.training_eligible === false) {
     return toast("流程測試圖不能接受為訓練資料，請用真實 AI 模式生成。", true);
   }
