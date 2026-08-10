@@ -211,16 +211,6 @@ def update_candidate(
                 raise ValueError(f"Invalid class id: {box.class_id}")
             if box.x2 <= box.x1 or box.y2 <= box.y1:
                 raise ValueError(f"Invalid box: {box.id}")
-        if request.status == "approved":
-            missing = [
-                name
-                for name in REQUIRED_QUALITY_CHECKS
-                if not request.quality_checks.get(name, False)
-            ]
-            if missing:
-                raise ValueError(
-                    "Complete all four mechanical quality checks before approval."
-                )
         return store.update_candidate(
             project_id,
             candidate_id,
