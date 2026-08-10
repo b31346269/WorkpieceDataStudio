@@ -386,8 +386,8 @@ async function startGeneration() {
   const seedValue = $("seed").value.trim();
   const payload = {
     reference_id: $("generationReference").value,
-    prompt: `${$("prompt").value}\nSparse-hole constraint: use approximately 4 to 8 small empty holes only, with broad empty cast surfaces; the large central bearing opening is one flange feature and is not counted. Never create dense rows or grids of holes. Every screw must be fully seated in a matching hole or counterbore on the workpiece, with the head facing upward and the shaft hidden inside the hole; never place screws beside holes or standing vertically.`,
-    negative_prompt: `${$("negativePrompt").value}, dense rows of holes, dense hole grid, more than eight small holes on the top face, repeated hole pattern, upside-down screw, inverted screw, vertical standing screw, loose screw beside a hole, screws on the conveyor, screws on the fixture, loose bolts in the background, fasteners outside the workpiece`,
+    prompt: `${$("prompt").value}\nSparse-hole constraint: use approximately 4 to 8 small empty holes only, with broad empty cast surfaces; the large central bearing opening is one flange feature and is not counted. Never create dense rows or grids of holes. Every screw must be fully seated in a matching hole or counterbore on the workpiece, with the head facing upward and the shaft hidden inside the hole; use at most one screw per hole, keep screws separated, and never stack, overlap, or fuse screws.`,
+    negative_prompt: `${$("negativePrompt").value}, dense rows of holes, dense hole grid, more than eight small holes on the top face, repeated hole pattern, upside-down screw, inverted screw, vertical standing screw, loose screw beside a hole, stacked screws, overlapping screws, double-stacked fastener, two screws in one hole, fused screws, screws on the conveyor, screws on the fixture, loose bolts in the background, fasteners outside the workpiece`,
     count: Number($("generationCount").value),
     seed: seedValue ? Number(seedValue) : null,
     strength: Number($("strength").value),
