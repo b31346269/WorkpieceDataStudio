@@ -49,7 +49,9 @@ FASTENER_REALISM_PROMPT = (
     "Torx, slot or internal-hex drive head facing upward. It must be fully seated in "
     "one matching hole with its shaft completely hidden. Never show an upright or "
     "upside-down screw, exposed threaded rod, headless stud, loose fastener, stacked "
-    "fasteners, or an ambiguous hollow nut-like cylinder. "
+    "fasteners, or an ambiguous hollow nut-like cylinder. Across the batch, vary the "
+    "installed screw finish between matte black-oxide steel and natural silver steel; "
+    "keep every screw mechanically seated regardless of its color. "
 )
 
 STRICT_MECHANICAL_PROMPT = (
