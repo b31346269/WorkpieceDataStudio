@@ -628,24 +628,27 @@ class Flux2KleinGenerator:
                 else DEFAULT_NEGATIVE_PROMPT
             )
             prompt = f"{prompt} Avoid these defects: {avoid}."
-            # Keep image conditioning in every mode. The uploaded workpiece
-            # photographs provide the desired near-overhead inspection-camera
-            # composition. Text-only creative generation tends to fall back to
-            # a low, three-quarter product-photo angle even when the prompt asks
-            # for 85--90 degrees. Creative mode still requests a redesigned
-            # housing, but the reference anchors camera elevation and framing.
-            text_only_recompose = False
+            # The editing pipeline strongly inherits and often multiplies the
+            # reference workpiece's holes and fasteners. Creative mode therefore
+            # starts from text only so the requested sparse topology can take
+            # priority. Its second pass restores the distant overhead factory
+            # composition by outpainting around the newly designed workpiece.
+            text_only_recompose = settings.quality_mode == "creative"
             prepared = prepare_reference(reference, settings.framing, size=1024)
             steps = 4
             generator = self._torch.Generator(device="cuda").manual_seed(settings.seed)
+            first_pass_args: dict[str, Any] = {
+                "prompt": prompt,
+                "height": 1024,
+                "width": 1024,
+                "guidance_scale": 1.0,
+                "num_inference_steps": steps,
+                "generator": generator,
+            }
+            if not text_only_recompose:
+                first_pass_args["image"] = prepared
             result = self._pipe(
-                image=prepared,
-                prompt=prompt,
-                height=1024,
-                width=1024,
-                guidance_scale=1.0,
-                num_inference_steps=steps,
-                generator=generator,
+                **first_pass_args,
             ).images[0]
 
             generation_passes = 1
