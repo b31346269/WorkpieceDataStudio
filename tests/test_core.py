@@ -11,7 +11,7 @@ from PIL import Image
 
 from workpiece_studio import storage
 from workpiece_studio.exporter import export_yolov8
-from workpiece_studio.jobs import GenerationJobs
+from workpiece_studio.jobs import GenerationJobs, screen_generated_boxes
 from workpiece_studio.schemas import GenerationRequest
 from workpiece_studio.storage import ProjectStore
 
@@ -157,6 +157,43 @@ class CoreWorkflowTests(unittest.TestCase):
                 "unsafe.zip",
                 yolo_zip_bytes(unsafe=True),
             )
+
+    def test_generated_box_screen_rejects_dense_center_features(self) -> None:
+        boxes = []
+        for index in range(6):
+            boxes.append(
+                {
+                    "class_id": 0,
+                    "x1": 300 + index * 10,
+                    "y1": 300,
+                    "x2": 320 + index * 10,
+                    "y2": 320,
+                }
+            )
+        boxes.append(
+            {
+                "class_id": 0,
+                "x1": 10,
+                "y1": 10,
+                "x2": 30,
+                "y2": 30,
+            }
+        )
+        result = screen_generated_boxes(boxes, ["hole", "screw", "tool"], 1024, 1024)
+        self.assertTrue(result["evaluated"])
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["hole_count"], 6)
+
+    def test_generated_box_screen_keeps_sparse_center_features(self) -> None:
+        boxes = [
+            {"class_id": 0, "x1": 300, "y1": 300, "x2": 330, "y2": 330},
+            {"class_id": 0, "x1": 500, "y1": 300, "x2": 530, "y2": 330},
+            {"class_id": 1, "x1": 400, "y1": 500, "x2": 430, "y2": 530},
+        ]
+        result = screen_generated_boxes(boxes, ["hole", "screw", "tool"], 1024, 1024)
+        self.assertTrue(result["passed"])
+        self.assertEqual(result["hole_count"], 2)
+        self.assertEqual(result["screw_count"], 1)
 
     def test_duplicate_model_is_reused_and_can_be_deleted(self) -> None:
         payload = io.BytesIO(b"model" * 1024)

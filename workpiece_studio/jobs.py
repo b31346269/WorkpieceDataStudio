@@ -12,6 +12,62 @@ from .schemas import GenerationRequest
 from .storage import ProjectStore, utc_now
 
 
+AUTO_SCREEN_MAX_HOLES = 5
+AUTO_SCREEN_MAX_SCREWS = 3
+AUTO_SCREEN_ROI_MARGIN = 0.22
+
+
+def screen_generated_boxes(
+    boxes: list[dict[str, Any]],
+    classes: list[str],
+    width: int,
+    height: int,
+) -> dict[str, Any]:
+    """Reject obviously dense center-workpiece annotations before manual review."""
+    class_ids = {name: index for index, name in enumerate(classes)}
+    hole_id = class_ids.get("hole")
+    screw_id = class_ids.get("screw")
+    if hole_id is None or screw_id is None or not boxes:
+        return {
+            "evaluated": False,
+            "passed": True,
+            "reason": "Pre-label boxes or expected classes were unavailable.",
+        }
+
+    min_x = width * AUTO_SCREEN_ROI_MARGIN
+    max_x = width * (1.0 - AUTO_SCREEN_ROI_MARGIN)
+    min_y = height * AUTO_SCREEN_ROI_MARGIN
+    max_y = height * (1.0 - AUTO_SCREEN_ROI_MARGIN)
+    center_boxes = []
+    for box in boxes:
+        center_x = (float(box["x1"]) + float(box["x2"])) / 2.0
+        center_y = (float(box["y1"]) + float(box["y2"])) / 2.0
+        if min_x <= center_x <= max_x and min_y <= center_y <= max_y:
+            center_boxes.append(box)
+
+    hole_count = sum(box["class_id"] == hole_id for box in center_boxes)
+    screw_count = sum(box["class_id"] == screw_id for box in center_boxes)
+    reasons = []
+    if hole_count > AUTO_SCREEN_MAX_HOLES:
+        reasons.append(
+            f"central hole detections {hole_count} exceed {AUTO_SCREEN_MAX_HOLES}"
+        )
+    if screw_count > AUTO_SCREEN_MAX_SCREWS:
+        reasons.append(
+            f"central screw detections {screw_count} exceed {AUTO_SCREEN_MAX_SCREWS}"
+        )
+    return {
+        "evaluated": True,
+        "passed": not reasons,
+        "hole_count": hole_count,
+        "screw_count": screw_count,
+        "max_holes": AUTO_SCREEN_MAX_HOLES,
+        "max_screws": AUTO_SCREEN_MAX_SCREWS,
+        "roi_margin": AUTO_SCREEN_ROI_MARGIN,
+        "reason": "; ".join(reasons) if reasons else "Within count limits.",
+    }
+
+
 class GenerationJobs:
     def __init__(self, store: ProjectStore) -> None:
         self.store = store
@@ -126,12 +182,27 @@ class GenerationJobs:
                     "prelabel_model_id": request.yolo_model_id or None,
                     **runtime,
                 }
+                auto_screen = screen_generated_boxes(
+                    boxes,
+                    project["classes"],
+                    image.width,
+                    image.height,
+                )
+                generation["auto_screen"] = auto_screen
                 candidate = self.store.create_candidate(
                     project_id,
                     image,
                     generation,
                     boxes,
                 )
+                if not auto_screen["passed"]:
+                    candidate = self.store.update_candidate(
+                        project_id,
+                        candidate["id"],
+                        "rejected",
+                        boxes,
+                        {},
+                    )
                 candidate_ids.append(candidate["id"])
                 self._patch(
                     job_id,
