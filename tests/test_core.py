@@ -160,7 +160,7 @@ class CoreWorkflowTests(unittest.TestCase):
 
     def test_generated_box_screen_rejects_dense_center_features(self) -> None:
         boxes = []
-        for index in range(6):
+        for index in range(11):
             boxes.append(
                 {
                     "class_id": 0,
@@ -182,7 +182,7 @@ class CoreWorkflowTests(unittest.TestCase):
         result = screen_generated_boxes(boxes, ["hole", "screw", "tool"], 1024, 1024)
         self.assertTrue(result["evaluated"])
         self.assertFalse(result["passed"])
-        self.assertEqual(result["hole_count"], 6)
+        self.assertEqual(result["hole_count"], 11)
 
     def test_generated_box_screen_keeps_sparse_center_features(self) -> None:
         boxes = [
@@ -194,6 +194,32 @@ class CoreWorkflowTests(unittest.TestCase):
         self.assertTrue(result["passed"])
         self.assertEqual(result["hole_count"], 2)
         self.assertEqual(result["screw_count"], 1)
+
+    def test_generated_box_screen_keeps_target_density(self) -> None:
+        boxes = []
+        for index in range(8):
+            boxes.append(
+                {
+                    "class_id": 0,
+                    "x1": 280 + index * 20,
+                    "y1": 320,
+                    "x2": 295 + index * 20,
+                    "y2": 335,
+                }
+            )
+        for index in range(2):
+            boxes.append(
+                {
+                    "class_id": 1,
+                    "x1": 350 + index * 30,
+                    "y1": 500,
+                    "x2": 370 + index * 30,
+                    "y2": 520,
+                }
+            )
+        result = screen_generated_boxes(boxes, ["hole", "screw", "tool"], 1024, 1024)
+        self.assertTrue(result["passed"])
+        self.assertEqual(result["total_count"], 10)
 
     def test_duplicate_model_is_reused_and_can_be_deleted(self) -> None:
         payload = io.BytesIO(b"model" * 1024)

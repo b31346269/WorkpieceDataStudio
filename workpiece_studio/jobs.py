@@ -12,8 +12,9 @@ from .schemas import GenerationRequest
 from .storage import ProjectStore, utc_now
 
 
-AUTO_SCREEN_MAX_HOLES = 5
+AUTO_SCREEN_MAX_HOLES = 8
 AUTO_SCREEN_MAX_SCREWS = 3
+AUTO_SCREEN_MAX_TOTAL = 10
 AUTO_SCREEN_ROI_MARGIN = 0.22
 
 
@@ -56,13 +57,20 @@ def screen_generated_boxes(
         reasons.append(
             f"central screw detections {screw_count} exceed {AUTO_SCREEN_MAX_SCREWS}"
         )
+    total_count = hole_count + screw_count
+    if total_count > AUTO_SCREEN_MAX_TOTAL:
+        reasons.append(
+            f"central hole and screw detections {total_count} exceed {AUTO_SCREEN_MAX_TOTAL}"
+        )
     return {
         "evaluated": True,
         "passed": not reasons,
         "hole_count": hole_count,
         "screw_count": screw_count,
+        "total_count": total_count,
         "max_holes": AUTO_SCREEN_MAX_HOLES,
         "max_screws": AUTO_SCREEN_MAX_SCREWS,
+        "max_total": AUTO_SCREEN_MAX_TOTAL,
         "roi_margin": AUTO_SCREEN_ROI_MARGIN,
         "reason": "; ".join(reasons) if reasons else "Within count limits.",
     }
