@@ -221,6 +221,151 @@ def inset_for_outpaint(
     return background
 
 
+def reframe_with_edge_texture(
+    image: Image.Image,
+    size: int = 1024,
+    content_scale: float = 0.64,
+) -> Image.Image:
+    """Deterministically add continuous reflected margin around the full image."""
+    source = ImageOps.exif_transpose(image).convert("RGB")
+    inset_size = max(1, round(size * content_scale))
+    inset = ImageOps.fit(
+        source,
+        (inset_size, inset_size),
+        method=Image.Resampling.LANCZOS,
+    )
+    left = (size - inset_size) // 2
+    right = size - inset_size - left
+    top = left
+    bottom = right
+    canvas = Image.new("RGB", (size, size))
+    canvas.paste(inset, (left, top))
+
+    top_source = inset.crop((0, 0, inset_size, min(top, inset_size)))
+    top_strip = ImageOps.flip(top_source).resize(
+        (inset_size, top), Image.Resampling.BICUBIC
+    )
+    canvas.paste(top_strip, (left, 0))
+    bottom_source = inset.crop((
+        0,
+        max(0, inset_size - bottom),
+        inset_size,
+        inset_size,
+    ))
+    bottom_strip = ImageOps.flip(bottom_source).resize(
+        (inset_size, bottom), Image.Resampling.BICUBIC
+    )
+    canvas.paste(bottom_strip, (left, top + inset_size))
+
+    left_source = canvas.crop((left, 0, left + min(left, inset_size), size))
+    left_strip = ImageOps.mirror(left_source).resize(
+        (left, size), Image.Resampling.BICUBIC
+    )
+    canvas.paste(left_strip, (0, 0))
+    right_source = canvas.crop((
+        left + max(0, inset_size - right),
+        0,
+        left + inset_size,
+        size,
+    ))
+    right_strip = ImageOps.mirror(right_source).resize(
+        (right, size), Image.Resampling.BICUBIC
+    )
+    canvas.paste(right_strip, (left + inset_size, 0))
+    return canvas
+
+
+def composite_central_workpiece(
+    workpiece_image: Image.Image,
+    background_image: Image.Image,
+    size: int = 1024,
+    max_dimension_fraction: float = 0.42,
+) -> Image.Image:
+    """Extract the central workpiece and place it on a sharp full-frame bench."""
+    try:
+        import cv2
+    except ImportError as exc:  # pragma: no cover - school ML runtime provides cv2
+        raise RuntimeError("OpenCV is required for maintenance-bench compositing.") from exc
+
+    source = np.asarray(
+        ImageOps.fit(
+            ImageOps.exif_transpose(workpiece_image).convert("RGB"),
+            (size, size),
+            method=Image.Resampling.LANCZOS,
+        )
+    )
+    mask = np.zeros((size, size), np.uint8)
+    bg_model = np.zeros((1, 65), np.float64)
+    fg_model = np.zeros((1, 65), np.float64)
+    margin = round(size * 0.10)
+    cv2.grabCut(
+        cv2.cvtColor(source, cv2.COLOR_RGB2BGR),
+        mask,
+        (margin, margin, size - 2 * margin, size - 2 * margin),
+        bg_model,
+        fg_model,
+        6,
+        cv2.GC_INIT_WITH_RECT,
+    )
+    binary = np.where(
+        (mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD), 255, 0
+    ).astype(np.uint8)
+    binary = cv2.morphologyEx(
+        binary,
+        cv2.MORPH_CLOSE,
+        np.ones((11, 11), np.uint8),
+        iterations=2,
+    )
+    count, labels, stats, centroids = cv2.connectedComponentsWithStats(binary)
+    if count <= 1:
+        raise RuntimeError("Could not isolate the generated workpiece.")
+    center = np.array([size / 2, size / 2])
+    candidates: list[tuple[float, int]] = []
+    for label in range(1, count):
+        area = float(stats[label, cv2.CC_STAT_AREA])
+        if area < size * size * 0.015:
+            continue
+        distance = float(np.linalg.norm(centroids[label] - center)) / size
+        candidates.append((area * max(0.15, 1.0 - distance * 1.8), label))
+    if not candidates:
+        raise RuntimeError("No central workpiece component was found.")
+    selected = max(candidates)[1]
+    binary = np.where(labels == selected, 255, 0).astype(np.uint8)
+    binary = cv2.dilate(binary, np.ones((5, 5), np.uint8), iterations=1)
+    x, y, width, height = cv2.boundingRect(binary)
+    padding = max(6, round(max(width, height) * 0.025))
+    x1, y1 = max(0, x - padding), max(0, y - padding)
+    x2, y2 = min(size, x + width + padding), min(size, y + height + padding)
+
+    object_rgb = Image.fromarray(source[y1:y2, x1:x2])
+    object_mask = Image.fromarray(binary[y1:y2, x1:x2]).filter(
+        ImageFilter.GaussianBlur(radius=1.2)
+    )
+    target = max(1, round(size * max_dimension_fraction))
+    scale = min(target / object_rgb.width, target / object_rgb.height)
+    new_size = (
+        max(1, round(object_rgb.width * scale)),
+        max(1, round(object_rgb.height * scale)),
+    )
+    object_rgb = object_rgb.resize(new_size, Image.Resampling.LANCZOS)
+    object_mask = object_mask.resize(new_size, Image.Resampling.LANCZOS)
+
+    canvas = ImageOps.fit(
+        ImageOps.exif_transpose(background_image).convert("RGB"),
+        (size, size),
+        method=Image.Resampling.LANCZOS,
+    )
+    offset = ((size - new_size[0]) // 2, (size - new_size[1]) // 2)
+    shadow = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    shadow_mask = Image.new("L", (size, size), 0)
+    shadow_mask.paste(object_mask, (offset[0] + 7, offset[1] + 10))
+    shadow_mask = shadow_mask.filter(ImageFilter.GaussianBlur(radius=9))
+    shadow.putalpha(shadow_mask.point(lambda value: round(value * 0.28)))
+    canvas = Image.alpha_composite(canvas.convert("RGBA"), shadow)
+    canvas.paste(object_rgb, offset, object_mask)
+    return canvas.convert("RGB")
+
+
 def prepare_reference(
     image: Image.Image,
     framing: str,
@@ -641,9 +786,9 @@ class Flux2KleinGenerator:
                 settings.quality_mode == "shape_variation"
                 and settings.scene_preset == "maintenance_bench"
             ):
-                # The UI prompt already contains the complete compact geometry,
-                # fastener and environment instructions. Avoid duplicating the
-                # generic prompt blocks, which weakens the requested background.
+                # Including the maintenance-scene language in the workpiece pass
+                # gives the housing realistic wear, color and illumination that
+                # blends naturally with the separately generated clear bench.
                 prompt = f"{scene_prompt} {settings.prompt.strip()}".strip()
             elif settings.quality_mode == "creative":
                 prompt = (
@@ -691,6 +836,46 @@ class Flux2KleinGenerator:
             generation_passes = 1
             effective_framing = settings.framing
             if text_only_recompose:
+                if settings.scene_preset == "maintenance_bench":
+                    background_prompt = (
+                        "Near-overhead smartphone photograph of an empty dirty, "
+                        "long-used university maintenance workbench. Choose a worn "
+                        "yellow-beige laminated tabletop with cracks, tape residue, "
+                        "dark grease stains and scratches, or a scratched dark-green "
+                        "anti-static mat. Put only two to four cropped used hand tools "
+                        "near the outer image edges. Keep the central half of the bench "
+                        "clear and empty for later placement of one workpiece. Full-frame "
+                        "sharp focus with uniform natural detail from edge to edge. No "
+                        "workpiece, gearbox, metal housing, large circular metal object, "
+                        "blur, bokeh, depth-of-field blur, silver machine table, fixture, "
+                        "T-slots, conveyor, studio background, text or logo."
+                    )
+                    background_generator = self._torch.Generator(
+                        device="cuda"
+                    ).manual_seed(settings.seed + 2_000_003)
+                    clear_background = self._pipe(
+                        prompt=background_prompt,
+                        height=1024,
+                        width=1024,
+                        guidance_scale=1.0,
+                        num_inference_steps=steps,
+                        generator=background_generator,
+                    ).images[0]
+                    result = composite_central_workpiece(
+                        result,
+                        clear_background,
+                        size=1024,
+                        max_dimension_fraction=0.42,
+                    )
+                    generation_passes = 2
+                    effective_framing = "sharp_background_mask_composite"
+                    return result.convert("RGB"), {
+                        "effective_steps": steps,
+                        "effective_guidance_scale": 1.0,
+                        "reference_conditioning": "text_only_recompose",
+                        "effective_reference_framing": effective_framing,
+                        "generation_passes": generation_passes,
+                    }
                 outpaint_reference = inset_for_outpaint(
                     result,
                     size=1024,
