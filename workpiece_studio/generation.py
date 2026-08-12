@@ -113,9 +113,12 @@ FACTORY_SCENE_PROMPTS = {
         "enclosure walls, spindle, probe or distant background."
     ),
     "maintenance_bench": (
-        "Show only a horizontal used metal maintenance-bench surface filling the "
-        "frame, with oil stains and a few cropped hand tools confined to the outer "
-        "edges; no room interior, shelves, horizon or distant background."
+        "The entire background must be a dirty, long-used maintenance bench. "
+        "Choose either a worn yellow-beige laminated tabletop with cracks, tape "
+        "residue and dark grease stains, or a scratched dark-green anti-static mat. "
+        "Place only two to four cropped used hand tools near the image edges. "
+        "Keep the workpiece fully visible. Do not use a silver metal table, clean "
+        "machine fixture, T-slots, conveyor rails or studio surface."
     ),
     "conveyor_fixture": (
         "Show only the horizontal surface of a conveyor inspection fixture filling "
@@ -174,13 +177,37 @@ def inset_for_outpaint(
     image: Image.Image,
     size: int = 1024,
     occupancy: float = 0.62,
+    edge_only_background: bool = False,
 ) -> Image.Image:
     source = ImageOps.exif_transpose(image).convert("RGB")
-    background = ImageOps.fit(
-        source,
-        (size, size),
-        method=Image.Resampling.BILINEAR,
-    )
+    if edge_only_background:
+        # Build the outpaint canvas only from corner workbench texture. Using a
+        # blurred full image leaves a large ghost of the centered workpiece, and
+        # FLUX reconstructs that ghost instead of respecting the small inset.
+        patch_size = max(32, round(min(source.size) * 0.28))
+        corners = (
+            source.crop((0, 0, patch_size, patch_size)),
+            source.crop((source.width - patch_size, 0, source.width, patch_size)),
+            source.crop((0, source.height - patch_size, patch_size, source.height)),
+            source.crop((
+                source.width - patch_size,
+                source.height - patch_size,
+                source.width,
+                source.height,
+            )),
+        )
+        mosaic = Image.new("RGB", (patch_size * 2, patch_size * 2))
+        mosaic.paste(corners[0], (0, 0))
+        mosaic.paste(corners[1], (patch_size, 0))
+        mosaic.paste(corners[2], (0, patch_size))
+        mosaic.paste(corners[3], (patch_size, patch_size))
+        background = mosaic.resize((size, size), Image.Resampling.BILINEAR)
+    else:
+        background = ImageOps.fit(
+            source,
+            (size, size),
+            method=Image.Resampling.BILINEAR,
+        )
     background = background.filter(ImageFilter.GaussianBlur(radius=38))
     background = ImageEnhance.Brightness(background).enhance(0.62)
     inset_size = max(1, round(size * occupancy))
@@ -606,11 +633,19 @@ class Flux2KleinGenerator:
                 "balanced": FLUX_BALANCED_PROMPT,
                 "creative": FLUX_CREATIVE_PROMPT,
             }.get(settings.quality_mode, FLUX_BALANCED_PROMPT)
-            if settings.quality_mode == "creative":
-                scene_prompt, _ = resolve_scene_prompt(
-                    settings.scene_preset,
-                    settings.seed,
-                )
+            scene_prompt, _ = resolve_scene_prompt(
+                settings.scene_preset,
+                settings.seed,
+            )
+            if (
+                settings.quality_mode == "shape_variation"
+                and settings.scene_preset == "maintenance_bench"
+            ):
+                # The UI prompt already contains the complete compact geometry,
+                # fastener and environment instructions. Avoid duplicating the
+                # generic prompt blocks, which weakens the requested background.
+                prompt = f"{scene_prompt} {settings.prompt.strip()}".strip()
+            elif settings.quality_mode == "creative":
                 prompt = (
                     f"{mode_prompt} {FASTENER_REALISM_PROMPT} {scene_prompt} "
                     f"{settings.prompt.strip()}"
@@ -629,11 +664,13 @@ class Flux2KleinGenerator:
             )
             prompt = f"{prompt} Avoid these defects: {avoid}."
             # The editing pipeline strongly inherits and often multiplies the
-            # reference workpiece's holes and fasteners. Creative mode therefore
-            # starts from text only so the requested sparse topology can take
-            # priority. Its second pass restores the distant overhead factory
-            # composition by outpainting around the newly designed workpiece.
-            text_only_recompose = settings.quality_mode == "creative"
+            # reference workpiece's holes, fasteners and background. Creative mode,
+            # and shape-variation on a maintenance bench, therefore start from text
+            # only. A second pass supplies the requested overhead environment.
+            text_only_recompose = settings.quality_mode == "creative" or (
+                settings.quality_mode == "shape_variation"
+                and settings.scene_preset == "maintenance_bench"
+            )
             prepared = prepare_reference(reference, settings.framing, size=1024)
             steps = 4
             generator = self._torch.Generator(device="cuda").manual_seed(settings.seed)
@@ -653,21 +690,29 @@ class Flux2KleinGenerator:
 
             generation_passes = 1
             effective_framing = settings.framing
-            if settings.quality_mode == "creative":
+            if text_only_recompose:
                 outpaint_reference = inset_for_outpaint(
                     result,
                     size=1024,
-                    occupancy=0.42,
+                    occupancy=(
+                        0.18
+                        if settings.scene_preset == "maintenance_bench"
+                        else 0.42
+                    ),
+                    edge_only_background=(
+                        settings.scene_preset == "maintenance_bench"
+                    ),
                 )
                 outpaint_prompt = (
                     "Preserve the generated workpiece exactly, including its "
                     "silhouette, central flange, ribs, holes and fasteners. Do not "
                     "redesign, add or remove any mechanical feature. Keep the "
                     "workpiece centered at the smaller scale shown in the input, "
-                    "occupying only 20 to 30 percent of the complete frame. "
-                    "Leave broad, continuous work-surface margin on every side. Naturally "
-                    "outpaint the surrounding horizontal factory work surface and "
-                    "local fixture on every side. Maintain an apparent 80 to 90 "
+                    "occupying only 12 to 18 percent of the complete frame; this "
+                    "small requested size compensates for the model enlarging it. "
+                    "Leave broad work-surface margin on every side. Outpaint only "
+                    "the requested dirty maintenance bench on every side. Do not "
+                    "create a silver metal table or machine fixture. Maintain an 80 to 90 "
                     "degree overhead view and show side walls only as a thin rim. "
                     "No horizon, distant room, camera, spindle, probe or lamp. "
                     f"Use this local surface setting: {scene_prompt} "

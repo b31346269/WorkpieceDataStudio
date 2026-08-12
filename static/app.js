@@ -17,7 +17,11 @@ const COLORS = ["#55d6be", "#ffb45b", "#70a8ff", "#d98cff", "#ff6978"];
 
 const OVERHEAD_FACTORY_BASE = `Machine-vision dataset photograph captured by an unseen high-mounted camera outside the frame. Request an 88 to 90 degree camera elevation to compensate for the generator's tendency to make the apparent angle too low, producing an apparent output angle of about 80 to 90 degrees. Keep the optical axis almost perpendicular to the work surface. Keep a realistic camera-to-workpiece working distance of 70 to 90 cm, preferably about 80 cm, using a normal smartphone or inspection-camera lens rather than an ultra-wide lens. The horizontal work surface and local metal fixture fill the entire background edge-to-edge. There is no distant background and nothing hangs above the workpiece. The complete workpiece occupies only about 20 to 30 percent of the image area, with broad visible fixture and work-surface margin on all four sides. The top face remains the dominant visible surface and appears close to its true plan-view shape with nearly parallel opposite edges. Side walls must occupy less than 10 percent of the visible workpiece height.`;
 
-const FACTORY_REALISM = `Use realistic aluminum texture, machining marks, scratches, grease, dust, oxidation, localized overhead point light, contact shadows, mild smartphone noise and imperfect exposure. Documentary factory inspection photography, photorealistic and physically plausible, not CGI, not CAD and not a clean studio product photograph.`;
+const FACTORY_REALISM = `Use realistic aluminum texture, machining marks, scratches, grease, dust, oxidation, localized overhead point light, contact shadows, mild smartphone noise, slight motion softness, imperfect white balance and imperfect exposure. Documentary maintenance-inspection photography recorded with a normal smartphone, photorealistic and physically plausible, not CGI, not CAD and not a clean studio product photograph.`;
+
+const REAL_TEST_ENVIRONMENT = `The entire background must be a dirty, long-used maintenance bench. Choose either a worn yellow-beige laminated tabletop with cracks, tape residue and dark grease stains, or a scratched dark-green anti-static mat. Place only two to four cropped used hand tools near the image edges and keep the workpiece fully visible. Do not use a silver metal table, clean machine fixture, T-slots, conveyor rails or studio surface.`;
+
+const OFFSET_MAINTENANCE_PROMPT = `Near-overhead smartphone inspection photo, 80 to 90 degree view, photographed from 100 to 120 cm away. A different shallow cast-aluminum gearbox housing occupies only 12 to 18 percent of the frame, with very broad workbench margin visible on all four sides. Its main bearing flange is clearly off-center toward one side or corner; the outer silhouette, ribs and mounting ears are visibly asymmetric. Show only 2 to 4 small holes and 1 to 2 fully seated recessed-drive screws. The entire background must be either a dirty worn yellow-beige maintenance tabletop or a scratched dark-green anti-static mat, with only 2 to 4 cropped used hand tools near the outer edges. Keep the complete workpiece fully visible and uncropped. Realistic imperfect smartphone exposure. No silver metal table or clean machine fixture.`;
 
 const FASTENER_REALISM = `Keep the workpiece top face sparse: show only 2 to 4 small drilled or threaded holes plus 1 or 2 installed screws. The large bearing or shaft opening is not counted as a small hole. Leave broad empty cast-metal surfaces between features; never form rows, grids or clusters. Every screw must have a clear recessed Phillips, Torx, slot or internal-hex drive head facing upward and must be fully seated in one matching hole with its shaft hidden. Across the batch, vary installed screw finish between matte black-oxide steel and natural silver steel. Never show an upright or upside-down screw, exposed threaded rod, headless stud, loose fastener, stacked fasteners, or an ambiguous hollow nut-like cylinder.`;
 
@@ -30,7 +34,7 @@ const WORKPIECE_RECIPES = {
   scale_light_fixture: `Create a mechanically plausible cast-aluminum gearbox housing with strongly varied physical proportions and framing while strictly preserving the apparent 80 to 90 degree overhead viewpoint. Alternate among compact square, elongated rectangular and irregular housings; vary the complete workpiece occupancy from about 18 to 32 percent of the image and rotate it naturally on the fixture without increasing camera obliqueness. Keep broad background margin on all four sides. Use believable conveyor pallets, clamping rails, locating pins or worn metal inspection plates. Vary dim ambient light, localized point light from outside the frame, mixed cool factory light, partial underexposure, hard contact shadows and metallic highlights while keeping holes and fasteners clearly reviewable.`,
 };
 
-const GENERATION_NEGATIVE = "white background, studio product photo, dense holes, more than four small holes, more than two screws, clustered features, upright screw, upside-down screw, exposed threaded rod, headless stud, hollow nut-like cylinder, loose screw, stacked screw, screw beside a hole, smooth blank screw head, CGI, low angle, close-up, cropped workpiece, visible camera, spindle or probe";
+const GENERATION_NEGATIVE = "white background, studio product photo, spotless factory, showroom-clean fixture, pristine polished workbench, sterile empty bench, symmetric staged tool layout, dense holes, more than four small holes, more than two screws, clustered features, upright screw, upside-down screw, exposed threaded rod, headless stud, hollow nut-like cylinder, loose screw, stacked screw, screw beside a hole, smooth blank screw head, background hole beside the workpiece, loose background fastener, tool crossing the workpiece, tool covering the workpiece, hand covering the top face, hand covering a hole, hand covering a screw, extra workpiece, readable brand logo, CGI, low angle, close-up, cropped workpiece, visible camera, spindle or probe";
 
 async function api(url, options = {}) {
   const response = await fetch(url, options);
@@ -57,6 +61,7 @@ function toast(message, error = false) {
 
 async function initialize() {
   bindEvents();
+  applyWorkpieceRecipe();
   try {
     state.system = await api("/api/system");
     renderSystem();
@@ -361,8 +366,10 @@ function applyScenePreset() {
 function applyWorkpieceRecipe() {
   const recipe = WORKPIECE_RECIPES[$("workpieceRecipe").value];
   if (!recipe) return;
-  $("scenePreset").value = "custom";
-  $("prompt").value = `${OVERHEAD_FACTORY_BASE}\n\n${recipe}\n\n${FASTENER_REALISM}\n\n${FACTORY_REALISM}\n\n${OVERHEAD_COMPOSITION}`;
+  $("scenePreset").value = "maintenance_bench";
+  $("prompt").value = $("workpieceRecipe").value === "offset_flange"
+    ? OFFSET_MAINTENANCE_PROMPT
+    : `${OVERHEAD_FACTORY_BASE}\n\n${recipe}\n\n${FASTENER_REALISM}\n\n${REAL_TEST_ENVIRONMENT}\n\n${FACTORY_REALISM}\n\n${OVERHEAD_COMPOSITION}`;
   $("negativePrompt").value = GENERATION_NEGATIVE;
   applyScenePreset();
 }
@@ -386,8 +393,8 @@ async function startGeneration() {
   const seedValue = $("seed").value.trim();
   const payload = {
     reference_id: $("generationReference").value,
-    prompt: `${$("prompt").value}\nSparse-hole constraint: use approximately 4 to 8 small empty holes only, with broad empty cast surfaces; the large central bearing opening is one flange feature and is not counted. Never create dense rows or grids of holes. Every screw must be fully seated in a matching hole or counterbore on the workpiece, with the head facing upward and the shaft hidden inside the hole; use at most one screw per hole, keep screws separated, and never stack, overlap, or fuse screws.`,
-    negative_prompt: `${$("negativePrompt").value}, dense rows of holes, dense hole grid, more than eight small holes on the top face, repeated hole pattern, upside-down screw, inverted screw, vertical standing screw, loose screw beside a hole, stacked screws, overlapping screws, double-stacked fastener, two screws in one hole, fused screws, screws on the conveyor, screws on the fixture, loose bolts in the background, fasteners outside the workpiece`,
+    prompt: `${$("prompt").value}\nSparse-hole constraint: use only 2 to 4 small empty holes, with broad empty cast surfaces; the large bearing opening is one flange feature and is not counted. Never create dense rows or grids of holes. Use only 1 or 2 installed screws. Every screw must be fully seated in a matching hole or counterbore on the workpiece, with the recessed drive head facing upward and the shaft hidden inside the hole; use at most one screw per hole, keep screws separated, and never stack, overlap, or fuse screws.`,
+    negative_prompt: `${$("negativePrompt").value}, dense rows of holes, dense hole grid, more than four small holes on the top face, repeated hole pattern, more than two installed screws, upside-down screw, inverted screw, vertical standing screw, loose screw beside a hole, stacked screws, overlapping screws, double-stacked fastener, two screws in one hole, fused screws, screws on the workbench, screws on the conveyor, screws on the fixture, loose bolts in the background, fasteners outside the workpiece`,
     count: Number($("generationCount").value),
     seed: seedValue ? Number(seedValue) : null,
     strength: Number($("strength").value),
