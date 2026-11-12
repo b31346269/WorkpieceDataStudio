@@ -91,6 +91,8 @@ ssh -o ExitOnForwardFailure=yes -N -L 127.0.0.1:7866:127.0.0.1:17865 sslab-schoo
 
 ## 4. 重跑歷史 M0 → C／D／E
 
+[E 模型訓練流程](TRAIN_YOLO11N_E.md)收錄 Roboflow 資料版本、原始 M0 權重的使用方式、E 的評估指令與歷史驗證指標。
+
 | 資料檔 | 原始圖片數（train / valid / test） | 用途 |
 |---|---:|---|
 | `training_inputs/new-workpiece-clean-yolov11.zip` | 374 / 47 / 47 | D/E 使用 train，所有組共用這份真實 valid/test |

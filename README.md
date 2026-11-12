@@ -6,6 +6,8 @@
 2. 打開 [手冊](HANDOFF_START_HERE.md)，向實驗室管理員取得個人 SSH 帳號、校網／VPN 入口及 GPU 分配。
 3. 照手冊登入伺服器，先完成一輪 `SMOKE` 並匯出 ONNX，再操作網頁或重跑歷史 M0／C／D／E 實驗。
 
+要重現 E 模型，請讀 [Roboflow 資料與 YOLO11n E 訓練流程](TRAIN_YOLO11N_E.md)。
+
 Workpiece Data Studio 是一套獨立的工件影像生成與 YOLO 資料審查工具，使用
 FastAPI 與瀏覽器介面操作。
 
