@@ -3,7 +3,7 @@
 ## 第一次接手
 
 1. 到 [GitHub Releases](https://github.com/b31346269/WorkpieceDataStudio/releases) 的 **Assets** 下載 `WorkpieceDataStudio-handoff-20261112.tar.gz` 和同名的 `.sha256`。交接包含程式、歷史資料與權重。GitHub 自動產生的 **Source code** 壓縮檔只有原始碼。
-2. 打開 [學弟妹交接手冊](HANDOFF_START_HERE.md)，向實驗室管理員取得個人 SSH 帳號、校網／VPN 入口及 GPU 分配。
+2. 打開 [手冊](HANDOFF_START_HERE.md)，向實驗室管理員取得個人 SSH 帳號、校網／VPN 入口及 GPU 分配。
 3. 照手冊登入伺服器，先完成一輪 `SMOKE` 並匯出 ONNX，再操作網頁或重跑歷史 M0／C／D／E 實驗。
 
 Workpiece Data Studio 是一套獨立的工件影像生成與 YOLO 資料審查工具，使用
