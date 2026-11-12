@@ -1,0 +1,8 @@
+# Copy to data.yaml after prepare_wrench_circle_dataset.py creates the
+# absolute paths. Keep one class only; do not add hole/screw here.
+path: /absolute/path/to/prepared_wrench_circle
+train: train/images
+val: val/images
+test: test/images
+names:
+  0: wrench_circle

@@ -1,5 +1,11 @@
 # Workpiece Data Studio
 
+## 第一次接手
+
+1. 到 [GitHub Releases](https://github.com/b31346269/WorkpieceDataStudio/releases) 的 **Assets** 下載 `WorkpieceDataStudio-handoff-20261112.tar.gz` 和同名的 `.sha256`。交接包含程式、歷史資料與權重。GitHub 自動產生的 **Source code** 壓縮檔只有原始碼。
+2. 打開 [學弟妹交接手冊](HANDOFF_START_HERE.md)，向實驗室管理員取得個人 SSH 帳號、校網／VPN 入口及 GPU 分配。
+3. 照手冊登入伺服器，先完成一輪 `SMOKE` 並匯出 ONNX，再操作網頁或重跑歷史 M0／C／D／E 實驗。
+
 Workpiece Data Studio 是一套獨立的工件影像生成與 YOLO 資料審查工具，使用
 FastAPI 與瀏覽器介面操作。
 
@@ -25,17 +31,19 @@ FastAPI 與瀏覽器介面操作。
 
 ## 本機啟動
 
-請在專案目錄使用專案自己的虛擬環境：
+若只想在 Windows 練習介面，先從 GitHub 的 **Code → Download ZIP** 下載並解壓原始碼，或執行 `git clone https://github.com/b31346269/WorkpieceDataStudio.git`。安裝 Python 3.12 後，在專案目錄的 PowerShell 執行以下指令。
 
 ```powershell
-.venv\Scripts\python.exe -m uvicorn workpiece_studio.main:app --host 127.0.0.1 --port 7865
+Set-ExecutionPolicy -Scope Process Bypass
+.\setup.ps1
+.\run.ps1
 ```
 
 開啟：
 
 <http://127.0.0.1:7865>
 
-若需要重新安裝環境：
+要使用本機生成與預標註，安裝 ML 依賴後重新啟動。
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
@@ -50,8 +58,7 @@ Set-ExecutionPolicy -Scope Process Bypass
 - FLUX.2 Klein 9B BF16 + CPU offload
 - `best.pt` YOLO 自動預標註
 
-伺服器只允許使用實體 GPU `2`、`3` 或 `6`。完整流程請參考
-[`school_server/README.md`](school_server/README.md)。
+交接腳本支援實體 GPU `6` 或 `8`。請使用管理員分配給你的卡。連線、SSH tunnel、訓練與評估請依 [交接手冊](HANDOFF_START_HERE.md)。
 
 FLUX.2 Klein 9B 使用 FLUX Non-Commercial License，只能依其授權條款進行
 非商業研究與開發。

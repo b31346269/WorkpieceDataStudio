@@ -17,6 +17,30 @@ import yaml
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 RF_SUFFIX = re.compile(r"\.rf\.[^.]+$", re.IGNORECASE)
 
+# Keep these values identical for every comparison group.  They are
+# deliberately targeted at the supplied 1280x720 phone videos: preserve the
+# workpiece geometry and sparse holes/screws while covering worn workbench
+# lighting, hand-held viewpoint changes and mild camera motion.  Mosaic and
+# MixUp are disabled because the videos contain one real workpiece, not a
+# four-image collage.  Augmentation is applied online by Ultralytics, so no
+# duplicated image/label files are made.
+AUGMENTATION_SETTINGS: dict[str, float | int] = {
+    "hsv_h": 0.01,
+    "hsv_s": 0.25,
+    "hsv_v": 0.25,
+    "degrees": 10.0,
+    "translate": 0.05,
+    "scale": 0.20,
+    "shear": 0.0,
+    "perspective": 0.001,
+    "flipud": 0.0,
+    "fliplr": 0.25,
+    "mosaic": 0.0,
+    "mixup": 0.0,
+    "copy_paste": 0.0,
+    "close_mosaic": 0,
+}
+
 
 def source_id(stem: str) -> str:
     """Return the original capture id before Roboflow's augmentation suffix."""
@@ -135,7 +159,7 @@ def copy_voc_train(
     destination: Path,
     prefix: str,
     name_to_id: dict[str, int],
-    blocked_source_ids: set[str],
+    blocked_source_ids: set[str] | None,
 ) -> int:
     images_target = destination / "images"
     labels_target = destination / "labels"
@@ -146,7 +170,7 @@ def copy_voc_train(
     for image in sorted(folder.iterdir()):
         if not image.is_file() or image.suffix.lower() not in IMAGE_SUFFIXES:
             continue
-        if source_id(image.stem) in blocked_source_ids:
+        if blocked_source_ids and source_id(image.stem) in blocked_source_ids:
             continue
         xml_path = folder / f"{image.stem}.xml"
         if not xml_path.is_file():
@@ -209,9 +233,21 @@ def prepare_dataset(
     destination: Path,
     auxiliary_voc_zips: list[Path] | None = None,
     auxiliary_yolo_zips: list[Path] | None = None,
+    aux_yolo_train_only: bool = False,
+    include_primary_train: bool = True,
+    preserve_raw_train: bool = False,
     synthetic_max_fraction: float = 0.25,
 ) -> Path:
-    report: dict[str, Any] = {"sources": {}, "leakage_rule": "Roboflow source id"}
+    report: dict[str, Any] = {
+        "sources": {},
+        "leakage_rule": (
+            "disabled for Roboflow-replication train composition"
+            if preserve_raw_train
+            else "Roboflow source id and exact image hash"
+        ),
+        "include_primary_train": include_primary_train,
+        "preserve_raw_train": preserve_raw_train,
+    }
     with tempfile.TemporaryDirectory(prefix="workpiece-source-") as source_tmp:
         source_root = Path(source_tmp)
         safe_extract(source_zip, source_root)
@@ -228,15 +264,24 @@ def prepare_dataset(
             )
         locked_source_ids = collect_source_ids(real_val) | collect_source_ids(real_test)
         locked_hashes = collect_hashes(real_val) | collect_hashes(real_test)
-        seen_real_hashes = set(locked_hashes)
-        real_train_count = copy_split(
-            real_train,
-            destination / "train",
-            "new_real",
-            blocked_source_ids=locked_source_ids,
-            blocked_hashes=locked_hashes,
-            seen_hashes=seen_real_hashes,
-        )
+        if preserve_raw_train:
+            train_blocked_source_ids = None
+            train_blocked_hashes = None
+            seen_real_hashes = None
+        else:
+            train_blocked_source_ids = locked_source_ids
+            train_blocked_hashes = locked_hashes
+            seen_real_hashes = set(locked_hashes)
+        real_train_count = 0
+        if include_primary_train:
+            real_train_count = copy_split(
+                real_train,
+                destination / "train",
+                "new_real",
+                blocked_source_ids=train_blocked_source_ids,
+                blocked_hashes=train_blocked_hashes,
+                seen_hashes=seen_real_hashes,
+            )
         real_val_count = copy_split(real_val, destination / "valid", "new_real")
         real_test_count = copy_split(real_test, destination / "test", "new_real") if real_test else 0
         report["sources"]["new_workpiece"] = {
@@ -266,7 +311,7 @@ def prepare_dataset(
                 destination / "train",
                 f"tool2_{index}",
                 name_to_id,
-                locked_source_ids,
+                None if preserve_raw_train else locked_source_ids,
             )
             real_train_count += count
             report["sources"][f"aux_voc_{index}"] = {
@@ -287,11 +332,12 @@ def prepare_dataset(
                 )
             total = 0
             split_counts: dict[str, int] = {}
-            for split_name, aliases in (
+            split_specs = (("train", ("train",)),) if aux_yolo_train_only else (
                 ("train", ("train",)),
                 ("valid", ("valid", "val", "validation")),
                 ("test", ("test",)),
-            ):
+            )
+            for split_name, aliases in split_specs:
                 split = find_split(yolo_root, aliases)
                 if not split:
                     continue
@@ -299,9 +345,13 @@ def prepare_dataset(
                     split,
                     destination / "train",
                     f"tool2_{index}_{split_name}",
-                    blocked_source_ids=locked_source_ids,
-                    blocked_hashes=locked_hashes,
-                    seen_hashes=seen_real_hashes,
+                    # Tool 2 is a separate Roboflow project.  Its filenames
+                    # often reuse generic names such as Image_001, so source
+                    # IDs must not be compared across projects.  Exact image
+                    # hashes are still blocked to prevent genuine duplicates.
+                    blocked_source_ids=None,
+                    blocked_hashes=None if preserve_raw_train else locked_hashes,
+                    seen_hashes=None if preserve_raw_train else seen_real_hashes,
                 )
                 split_counts[split_name] = count
                 total += count
@@ -310,7 +360,8 @@ def prepare_dataset(
             real_train_count += total
             report["sources"][f"aux_yolo_{index}"] = {
                 "archive": str(auxiliary_zip),
-                "train_from_all_auxiliary_splits": total,
+                "train_only": aux_yolo_train_only,
+                "images_added_to_train": total,
                 "source_split_counts": split_counts,
                 "validation_included": False,
             }
@@ -377,6 +428,24 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Optional auxiliary YOLO ZIP; all of its splits become train-only.",
     )
+    parser.add_argument(
+        "--aux-yolo-train-only",
+        action="store_true",
+        help="Use only the auxiliary YOLO train split; never import its valid/test images.",
+    )
+    parser.add_argument(
+        "--exclude-primary-train",
+        action="store_true",
+        help="Do not copy the primary ZIP train split; keep its valid/test as fixed holdout.",
+    )
+    parser.add_argument(
+        "--preserve-raw-train",
+        action="store_true",
+        help=(
+            "Reproduce the archive's Roboflow train composition exactly: do not remove "
+            "source-id or exact-hash overlaps from train."
+        ),
+    )
     parser.add_argument("--synthetic", type=Path, help="Approved generated YOLOv8 ZIP")
     parser.add_argument(
         "--synthetic-max-fraction",
@@ -393,7 +462,11 @@ def parse_args() -> argparse.Namespace:
         default=640,
         help="Fixed ONNX input size for the existing Unity decoder.",
     )
-    parser.add_argument("--batch", type=float, default=-1)
+    # Keep explicit batches as integers; Ultralytics DDP divides the global
+    # batch across GPUs and PyTorch's BatchSampler rejects a float such as
+    # 16.0 even when its numeric value is integral.  -1 remains the documented
+    # AutoBatch sentinel for single-GPU runs.
+    parser.add_argument("--batch", type=int, default=-1)
     parser.add_argument(
         "--device",
         default="6",
@@ -401,6 +474,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--optimizer",
+        default="auto",
+        help="Ultralytics optimizer; use AdamW with a small lr for fine-tuning branches.",
+    )
+    parser.add_argument("--lr0", type=float, help="Initial learning rate override.")
+    parser.add_argument("--lrf", type=float, help="Final learning-rate fraction override.")
     parser.add_argument("--name", default="workpiece_yolo26l")
     parser.add_argument("--output", type=Path, default=Path("school_training"))
     return parser.parse_args()
@@ -430,23 +510,38 @@ def main() -> None:
         dataset_root,
         auxiliary_voc_zips=args.aux_voc,
         auxiliary_yolo_zips=args.aux_yolo,
+        aux_yolo_train_only=args.aux_yolo_train_only,
+        include_primary_train=not args.exclude_primary_train,
+        preserve_raw_train=args.preserve_raw_train,
         synthetic_max_fraction=args.synthetic_max_fraction,
     )
     model = YOLO(args.model)
+    train_kwargs: dict[str, Any] = {
+        "data": str(data_yaml),
+        "epochs": args.epochs,
+        "imgsz": args.imgsz,
+        "batch": args.batch,
+        "device": args.device,
+        "workers": args.workers,
+        "patience": 30,
+        "seed": args.seed,
+        "deterministic": True,
+        "cache": False,
+        "project": str((args.output / "runs").resolve()),
+        "name": args.name,
+        "optimizer": args.optimizer,
+        **AUGMENTATION_SETTINGS,
+    }
+    if args.lr0 is not None:
+        train_kwargs["lr0"] = args.lr0
+    if args.lrf is not None:
+        train_kwargs["lrf"] = args.lrf
     model.train(
-        data=str(data_yaml),
-        epochs=args.epochs,
-        imgsz=args.imgsz,
-        batch=args.batch,
-        device=args.device,
-        workers=args.workers,
-        patience=30,
-        seed=args.seed,
-        deterministic=True,
-        close_mosaic=10,
-        cache=False,
-        project=str((args.output / "runs").resolve()),
-        name=args.name,
+        **train_kwargs,
+    )
+    (args.output / "augmentation_settings.json").write_text(
+        json.dumps(AUGMENTATION_SETTINGS, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
     )
     best_path = Path(model.trainer.best)
     exported = YOLO(str(best_path)).export(

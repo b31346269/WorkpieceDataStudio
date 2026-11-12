@@ -1,0 +1,4 @@
+image,recording_sequence,workpiece_family,physical_wrench,camera_view,distance_group,lighting_group,circle_visible,split
+relative/path/image_0001.jpg,recording_01,known_family_A,wrench_01,top,medium,even,yes,train
+relative/path/image_0002.jpg,recording_02,known_family_A,wrench_01,oblique,near,glare,partial,val
+relative/path/image_0003.jpg,recording_03,unseen_family_B,wrench_02,oblique,far,dim,no,test

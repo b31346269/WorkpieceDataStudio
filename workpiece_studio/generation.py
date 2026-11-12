@@ -22,52 +22,111 @@ os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 DEFAULT_NEGATIVE_PROMPT = (
     "illustration, CGI, 3d render, toy, miniature, impossible mechanism, "
     "melted metal, warped metal, fused screws, floating bolt, duplicated screw, "
-    "missing screw, extra screw, fake hole, painted circle, oval hole, collapsed hole, "
-    "deformed threads, malformed fastener, asymmetrical screw head, smooth round "
-    "metal cap presented as a screw, featureless circular fastener head, blank-top "
-    "external hex bolt, smooth machined bolt head, shallow engraved ring instead of "
+    "fake hole, painted circle, oval hole, collapsed hole, "
+    "deformed threads, malformed fastener, asymmetrical screw head, featureless "
+    "circular fastener head, circular cap without a drive recess, smooth round metal "
+    "smooth black screw head, smooth black cap, black round cap, black circular disk, "
+    "black circular outer perimeter, black button-head screw, black ring without a hex socket, "
+    "disk, circular screw head without a visible drive, shallow engraved ring instead of "
     "a drive recess, circular outline without a cavity, center dot instead of a drive "
     "recess, smooth raised cylindrical boss, smooth vertical post, blank cylindrical "
-    "cap, raised dowel, all holes and no installed screws, zero visible screws, "
-    "empty threaded holes used instead of screws, more than two installed screws, "
+    "cap, raised dowel, upright hollow tube, hollow cylindrical standoff, open tubular boss, "
+    "vertical sleeve, tube with a hole on top, raised collar without a seated screw, "
     "screw-covered workpiece, upside-down screw, inverted screw, vertical standing screw, "
-    "loose screw beside a hole, stacked screws, overlapping screws, double-stacked fastener, "
+    "loose screw beside a hole, loose bolt, loose nut, loose washer, detached fastener, "
+    "detached cylindrical metal piece, upright metal post, threaded post, background fastener, "
+    "stacked screws, overlapping screws, double-stacked fastener, "
     "two screws in one hole, fused screws, screws on the conveyor, screws on the fixture, loose "
     "bolts in the background, fasteners outside the workpiece, dense fastener pattern, dense rows of holes, dense hole "
-    "grid, more than four small holes on the top face, clustered screws, adjacent screw "
+    "grid, more than two empty holes on the top face, clustered screws, adjacent screw "
     "heads, headless threaded stud, protruding "
+    "missing black socket-head screw, missing natural silver internal-hex socket-head screw, "
+    "missing smooth natural-metal external-hex bolt, painted white screw, plastic white screw, "
+    "all screws white, only one fastener style, complete screw, full bolt, vertical bolt, threaded cylinder, upright fastener, "
+    "projecting bolt, exposed shank, screw sidewall, cylindrical screw body, visible screw shaft, exposed screw body, "
+    "visible threads below head, screw neck, head on a post, screw sleeve, washer under screw, "
+    "nut under screw, boss around screw, anything except the fastener head, "
     "threaded rod, bare male thread above the workpiece, set screw without a visible "
     "drive head, rivet, cylindrical plug mistaken for a screw, blurry, "
     "low resolution, watermark, text"
 )
 
 FASTENER_REALISM_PROMPT = (
-    "Keep the top face sparse: show only 2 to 4 small drilled or threaded holes, "
-    "plus 1 or 2 installed screws. The large bearing or shaft opening is not counted "
-    "as a small hole. Leave broad empty cast-metal surfaces between features; never "
-    "form rows, grids or clusters. Every screw must have a clear recessed Phillips, "
-    "Torx, slot or internal-hex drive head facing upward. It must be fully seated in "
-    "one matching hole with its shaft completely hidden. Never show an upright or "
-    "upside-down screw, exposed threaded rod, headless stud, loose fastener, stacked "
-    "fasteners, or an ambiguous hollow nut-like cylinder. Across the batch, vary the "
-    "installed screw finish between matte black-oxide steel and natural silver steel; "
-    "keep every screw mechanically seated regardless of its color. "
+    "Show 3 to 5 installed fasteners on the workpiece top face, and include all three "
+    "required styles in every image, not an either-or choice: at least one matte black "
+    "flush-mounted six-sided polygonal socket-head top viewed straight from above. The black "
+    "fastener's OUTER PERIMETER must be visibly hexagonal or another straight-edged polygon, "
+    "never circular, and its top must contain one large, deep, sharply defined internal-hex "
+    "recess; a smooth black head or black round cap is forbidden. "
+    "clearly visible internal-hex socket; at least one natural silver-gray stainless "
+    "natural silver-gray flush-mounted recessed-hex head with the same large, deep internal-hex socket and "
+    "a flat six-sided outer silhouette, never a circular perimeter, "
+    "real metallic highlights, never painted white or plastic; and at least one natural "
+    "silver-metal flush-mounted external-hex head with a flat six-sided top, only a thin edge bevel and a completely smooth, unbroken surface "
+    "with no groove, recess, socket or cross, like the smooth silver bolt in the "
+    "reference photograph, fully seated flush in a matching hole in the top face, never on a raised boss. The hex-head "
+    "style is a real installed bolt, not a loose nut: no separate washer, no exposed long "
+    "shaft and no nut-only appearance. Metal socket screws never use a Phillips cross. Every fastener "
+    "head faces the camera, is a flat low-profile horizontal head fully seated flush or only slightly proud in one "
+    "matching hole in the top face, and only the fastener head top is visible. This is a top-face inspection image, "
+    "not a hardware catalog: never draw a complete screw or bolt. Show no screw shaft, threaded body, visible "
+    "threads below the head, neck, shoulder below the head, sleeve, collar, tube, boss, washer or nut around or "
+    "under it; the shaft is completely hidden below the workpiece surface. Keep exactly 1 to 2 additional empty "
+    "drilled holes and no other visible empty holes, not counting the main bearing opening, and "
+    "broad empty cast-metal surfaces. The workbench and area around the workpiece must "
+    "contain zero detached screws, bolts, nuts, washers, threaded rods, studs, cylindrical "
+    "metal pieces or upright posts. All fasteners must lie horizontally in the workpiece; "
+    "never create a vertical screw, vertical sleeve, hollow cylindrical standoff, open tube, "
+    "raised collar with a hole but no seated screw, or any tube-like boss. Never show a featureless flat disk, circular cap without a drive recess, circular ring mistaken for an empty hole, tiny socket recess, "
+    "Phillips cross, isolated external hex nut, washer without a screw, upright screw, "
+    "upside-down screw, exposed threaded rod, headless stud, loose or stacked fasteners, "
+    "or an ambiguous hollow cylinder. "
 )
 
 STRICT_MECHANICAL_PROMPT = (
     " Preserve the reference workpiece's exact mechanical topology: keep the same "
     "number, position, diameter, circularity and depth of holes; keep every screw "
-    "and bolt rigid, circular, correctly seated and aligned; preserve sharp machined "
+    "and bolt rigid, hexagonal, correctly seated and aligned; preserve sharp machined "
     "edges and physically continuous metal. Vary only lighting, surface finish, "
     "camera exposure and workbench background."
 )
 
 SHAPE_VARIATION_PROMPT = (
-    "Keep holes circular and drilled; keep screws rigid, aligned and seated. "
-    "Redesign this as a different mechanically plausible industrial housing. "
-    "Change the overall silhouette, proportions, mounting ears, ribs, cooling fins "
-    "and cavity layout. Use continuous machined metal without fused parts."
+    "Use the uploaded image only as a reference for the requested fastener head style; "
+    "do not copy its workpiece silhouette, proportions, central layout, ribs, holes or "
+    "background. Redesign a genuinely different, mechanically plausible low-profile "
+    "industrial housing. Keep holes circular and drilled; keep screws rigid, aligned "
+    "and seated. Change the overall silhouette, proportions, mounting ears, ribs, "
+    "cooling fins and cavity layout. The geometric center must be solid metal, a "
+    "rectangular panel or an irregular rib junction, never a large circular boss, "
+    "flange, bearing opening or round recess. Use continuous machined metal without "
+    "fused parts."
 )
+
+# FLUX.2 tends to repeat the geometry of a conditioning image unless the requested
+# topology is made explicit.  Rotate through independent housing families by seed so
+# a batch of consecutive candidates cannot collapse into copies of one reference.
+SHAPE_VARIATION_FAMILIES = (
+    "Geometry family A: use a long shallow rectangular housing with a broad offset "
+    "rectangular service panel, parallel rib channels and a short side bank of cooling "
+    "fins. No circular feature near the center.",
+    "Geometry family B: use a shallow trapezoidal or triangular plate-like casting with "
+    "unequal corner ears, diagonal reinforcement ribs and an offset rectangular slot. "
+    "The center remains a solid irregular rib junction, not a circle.",
+    "Geometry family C: use an irregular pentagonal or notched polygonal housing with "
+    "stepped terraces, one side-heavy fin group and a small rectangular or hexagonal "
+    "shaft interface away from the center. Do not make a round central boss.",
+    "Geometry family D: use a split two-level rectangular cover with a long rounded-"
+    "rectangle inspection cavity, asymmetric mounting ears and non-mirrored rib grids. "
+    "Keep the center flat and rectangular, with no circular opening.",
+    "Geometry family E: use a compact U-shaped or forked casting with a solid crossbar, "
+    "two unequal side towers and stepped machined pockets. Use only small peripheral "
+    "drilled holes; no central circular flange, bearing or ring.",
+)
+
+
+def resolve_shape_variation_family(seed: int) -> str:
+    return SHAPE_VARIATION_FAMILIES[seed % len(SHAPE_VARIATION_FAMILIES)]
 
 FLUX_STRICT_PROMPT = (
     "Edit the reference photograph without changing the workpiece geometry. "
@@ -358,9 +417,11 @@ def composite_central_workpiece(
     offset = ((size - new_size[0]) // 2, (size - new_size[1]) // 2)
     shadow = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     shadow_mask = Image.new("L", (size, size), 0)
-    shadow_mask.paste(object_mask, (offset[0] + 7, offset[1] + 10))
-    shadow_mask = shadow_mask.filter(ImageFilter.GaussianBlur(radius=9))
-    shadow.putalpha(shadow_mask.point(lambda value: round(value * 0.28)))
+    # A long directional shadow makes a flat overhead object appear raised and
+    # pitched toward the camera. Keep only a tight, almost centred contact shadow.
+    shadow_mask.paste(object_mask, (offset[0], offset[1] + 2))
+    shadow_mask = shadow_mask.filter(ImageFilter.GaussianBlur(radius=4))
+    shadow.putalpha(shadow_mask.point(lambda value: round(value * 0.20)))
     canvas = Image.alpha_composite(canvas.convert("RGBA"), shadow)
     canvas.paste(object_rgb, offset, object_mask)
     return canvas.convert("RGB")
@@ -778,6 +839,11 @@ class Flux2KleinGenerator:
                 "balanced": FLUX_BALANCED_PROMPT,
                 "creative": FLUX_CREATIVE_PROMPT,
             }.get(settings.quality_mode, FLUX_BALANCED_PROMPT)
+            shape_family_prompt = (
+                resolve_shape_variation_family(settings.seed)
+                if settings.quality_mode == "shape_variation"
+                else ""
+            )
             scene_prompt, _ = resolve_scene_prompt(
                 settings.scene_preset,
                 settings.seed,
@@ -789,7 +855,19 @@ class Flux2KleinGenerator:
                 # Including the maintenance-scene language in the workpiece pass
                 # gives the housing realistic wear, color and illumination that
                 # blends naturally with the separately generated clear bench.
-                prompt = f"{scene_prompt} {settings.prompt.strip()}".strip()
+                user_prompt = settings.prompt.strip()
+                # Keep one compact fastener specification in the effective prompt.
+                # The UI may already include it from the recipe; do not append it
+                # repeatedly on every submission.
+                if "Show 3 to 5 installed fasteners" not in user_prompt:
+                    user_prompt = f"{FASTENER_REALISM_PROMPT} {user_prompt}".strip()
+                # This path intentionally starts from text rather than the uploaded
+                # workpiece. Include the shape-variation mode prompt here; the old
+                # implementation accidentally omitted it, allowing the UI recipe
+                # and reference geometry to dominate every candidate.
+                prompt = (
+                    f"{scene_prompt} {mode_prompt} {shape_family_prompt} {user_prompt}"
+                ).strip()
             elif settings.quality_mode == "creative":
                 prompt = (
                     f"{mode_prompt} {FASTENER_REALISM_PROMPT} {scene_prompt} "
@@ -867,8 +945,48 @@ class Flux2KleinGenerator:
                         size=1024,
                         max_dimension_fraction=0.42,
                     )
-                    generation_passes = 2
-                    effective_framing = "sharp_background_mask_composite"
+                    # A geometrically controlled cutout solves framing, but a raw
+                    # paste still has mismatched illumination, colour temperature,
+                    # sensor texture and contact shadows. Use the composite as an
+                    # edit reference for one final photographic harmonisation pass.
+                    # The prompt deliberately forbids layout or mechanical changes;
+                    # manual review remains mandatory because this is generative.
+                    harmonize_prompt = (
+                        "Photographically harmonize this existing maintenance-bench "
+                        "inspection image into one naturally captured smartphone "
+                        "photo. Preserve the exact composition, camera angle, scale, "
+                        "workpiece position, outer silhouette, flange position, ribs, "
+                        "holes, installed screws, tools and background layout. Do not "
+                        "add, remove, duplicate, relocate or redesign any mechanical "
+                        "feature or object. Only make the workpiece genuinely belong "
+                        "on the bench: unify illumination direction, exposure, white "
+                        "balance, local metallic reflections, fine sensor grain and "
+                        "sharpness; add a subtle tight contact shadow and ambient "
+                        "occlusion directly and evenly beneath its perimeter, without "
+                        "a directional cast shadow. The workpiece top face must remain "
+                        "parallel to the workbench in a true overhead view: opposite "
+                        "edges stay parallel, circular openings remain circular, near "
+                        "and far mounting holes keep equal apparent size, and no front "
+                        "side wall becomes thicker than the rear wall. Retain the dull, "
+                        "used aluminum machining marks, scratches, grease and light "
+                        "oxidation. Keep the entire frame sharply detailed with no "
+                        "bokeh, blurred sides, halo, cutout edge, floating object, "
+                        "studio lighting, CGI smoothness, text or logo."
+                    )
+                    harmonize_generator = self._torch.Generator(
+                        device="cuda"
+                    ).manual_seed(settings.seed + 3_000_007)
+                    result = self._pipe(
+                        image=result,
+                        prompt=harmonize_prompt,
+                        height=1024,
+                        width=1024,
+                        guidance_scale=1.0,
+                        num_inference_steps=steps,
+                        generator=harmonize_generator,
+                    ).images[0]
+                    generation_passes = 3
+                    effective_framing = "harmonized_sharp_background_composite"
                     return result.convert("RGB"), {
                         "effective_steps": steps,
                         "effective_guidance_scale": 1.0,

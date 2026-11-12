@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .storage import REQUIRED_QUALITY_CHECKS, ProjectStore, utc_now
+from .storage import ProjectStore, utc_now
 
 
 def _quote_yaml(value: str) -> str:
@@ -21,15 +21,17 @@ def export_yolov8(
     split_name: str = "train",
 ) -> tuple[Path, dict[str, Any]]:
     project = store.get_project(project_id)
+    # Manual approval is the source of truth for this project.  The UI's
+    # mechanical-quality checklist is optional review guidance (the user
+    # explicitly chose to evaluate it themselves), so an approved candidate
+    # must not be silently excluded merely because those legacy checkboxes are
+    # false or absent.  Workflow/mock previews remain excluded separately by
+    # ``training_eligible``.
     candidates = [
         candidate
         for candidate in store.list_candidates(project_id)
         if candidate["status"] == "approved"
         and candidate.get("generation", {}).get("training_eligible", True)
-        and all(
-            candidate.get("quality_checks", {}).get(name, False)
-            for name in REQUIRED_QUALITY_CHECKS
-        )
     ]
     if not candidates:
         raise ValueError(
